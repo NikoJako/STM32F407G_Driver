@@ -75,7 +75,7 @@
 #define AHB2_PERIPH_BASE					0x50000000U
 
 //AHB1 Peripherals - GPIO & RCC Registers
-#define GPIOA_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0000)
+#define GPIOA_BASE_ADDR			(AHB1_PERIPH_BASE + 0x0000)
 #define GPIOB_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0400)
 #define GPIOC_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0800)
 #define GPIOD_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0C00)
@@ -175,59 +175,6 @@ typedef struct
 #define GPIOH				((GPIO_RegDef_t*)GPIOH_BASE_ADDR)
 #define GPIOI				((GPIO_RegDef_t*)GPIOI_BASE_ADDR)
 
-/**************************EXTI register map on page 287 of RM*************************/
-typedef struct
-{
-	volatile uint32_t EXTI_IMR;		//Interrupt mask register 				Address offset: 0x00
-	volatile uint32_t EXTI_EMR;		//Event mask register					Address offset: 0x04
-	volatile uint32_t EXTI_RTSR;	//Rising trigger selection register		Address offset: 0x08
-	volatile uint32_t EXTI_FTSR;	//Falling trigger selection register	Address offset: 0x0C
-	volatile uint32_t EXTI_SWIER;	//Software interrupt event register		Address offset: 0x10
-	volatile uint32_t EXTI_PR;		//Pending register						Address offset: 0x14
-
-}EXTI_RegDef_t;
-
-//pointer to struct of type EXTI_RegDef_t
-#define EXTI 	((EXTI_RegDef_t*)EXTI_BASE_ADDR)
-
-/**************************SYSCFG register map on page 294 of RM*************************/
-typedef struct
-{
-	volatile uint32_t SYSCFG_MEMRMP;	//SYSCFG memory remap register									Address offset: 0x00
-	volatile uint32_t SYSCFG_PMC;		//SYSCFG peripheral mode configuration register					Address offset: 0x04
-	volatile uint32_t SYSCFG_EXTICR[4];	//Array of SYSCFG external interrupt configuration registers 	Address offset: 0x08 - 0x14
-	uint32_t RESERVED1[2];				//need to add RESERVED registers
-	volatile uint32_t SYSCFG_CMPCR;		//Compensation cell control register							Address offset: 0x20
-	//uint32_t RESERVED2[2];			//Reserved, 0x24-x028
-	//volitile uint32_t CFGR			//																Address offset: 0x2C
-}SYSCFG_RegDef_t;
-
-//pointer to struct of type SYSCFG_RegDef_t
-#define SYSCFG 	((SYSCFG_RegDef_t*)SYSCFG_BASE_ADDR)
-
-/**************************SPI register map on page 925 of RM*************************/
-/***********************Reset Value = 0 unless otherwise stated*************************/
-typedef struct
-{
-	volatile uint32_t SPI_CR1;			//Control register 1			(0x00)
-	volatile uint32_t SPI_CR2;			//Control registers 2		 	(0x04)
-	volatile uint32_t SPI_SR; 			//Status register 				(0x08)				Reset value: 0x0002
-	volatile uint32_t SPI_DR; 			//Data register 				(0x0C)
-	volatile uint32_t SPI_CRCPR; 		//SPI CRC Polynomial register	(0x10)				Reset value: 0x0007
-	volatile uint32_t SPI_RXCRCR; 		//SPI Rx CRC Register			(0x14)
-	volatile uint32_t SPI_TXCRCR; 		//SPI Tx CRC Register			(0x18)
-	volatile uint32_t SPI_I2SCFGR; 		//I2S Config Register			(0x1C)
-	volatile uint32_t SPI_I2SPR;		//I2S Prescaler Register		(0x20)
-
-}SPI_RegDef_t;
-
-//#define SPIx	((SPI_RegDef_t*))
-
-//**************************GPIO Peripheral Definitions*************************************/
-/**************************GPIO register map on page 287 of RM*************************/
-
-
-
 //Clock Enable Macros for GPIOx Peripherals
 #define GPIOA_PCLK_EN()		(RCC->RCC_AHB1ENR |= (1 << 0))
 #define GPIOB_PCLK_EN()		(RCC->RCC_AHB1ENR |= (1 << 1))
@@ -274,6 +221,287 @@ typedef struct
 									(x == GPIOH) ? 7 : \
 									(x == GPIOI) ? 8 : 0 )
 
+/**************************EXTI register map on page 287 of RM*************************/
+typedef struct
+{
+	volatile uint32_t EXTI_IMR;		//Interrupt mask register 				Address offset: 0x00
+	volatile uint32_t EXTI_EMR;		//Event mask register					Address offset: 0x04
+	volatile uint32_t EXTI_RTSR;	//Rising trigger selection register		Address offset: 0x08
+	volatile uint32_t EXTI_FTSR;	//Falling trigger selection register	Address offset: 0x0C
+	volatile uint32_t EXTI_SWIER;	//Software interrupt event register		Address offset: 0x10
+	volatile uint32_t EXTI_PR;		//Pending register						Address offset: 0x14
+
+}EXTI_RegDef_t;
+
+//pointer to struct of type EXTI_RegDef_t
+#define EXTI 				((EXTI_RegDef_t*)EXTI_BASE_ADDR)
+
+/**************************SYSCFG register map on page 294 of RM*************************/
+typedef struct
+{
+	volatile uint32_t SYSCFG_MEMRMP;	//SYSCFG memory remap register									Address offset: 0x00
+	volatile uint32_t SYSCFG_PMC;		//SYSCFG peripheral mode configuration register					Address offset: 0x04
+	volatile uint32_t SYSCFG_EXTICR[4];	//Array of SYSCFG external interrupt configuration registers 	Address offset: 0x08 - 0x14
+	uint32_t RESERVED1[2];				//need to add RESERVED registers
+	volatile uint32_t SYSCFG_CMPCR;		//Compensation cell control register							Address offset: 0x20
+	//uint32_t RESERVED2[2];			//Reserved, 0x24-x028
+	//volitile uint32_t CFGR			//																Address offset: 0x2C
+}SYSCFG_RegDef_t;
+
+//pointer to struct of type SYSCFG_RegDef_t
+#define SYSCFG 				((SYSCFG_RegDef_t*)SYSCFG_BASE_ADDR)
+
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/**************************SPI register map on page 925 of RM*************************/
+/***********************Reset Value = 0 unless otherwise stated***********************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+typedef struct
+{
+	volatile uint32_t SPI_CR1;			//Control register 1			(0x00)
+	volatile uint32_t SPI_CR2;			//Control registers 2		 	(0x04)
+	volatile uint32_t SPI_SR; 			//Status register 				(0x08)				Reset value: 0x0002
+	volatile uint32_t SPI_DR; 			//Data register 				(0x0C)
+	volatile uint32_t SPI_CRCPR; 		//SPI CRC Polynomial register	(0x10)				Reset value: 0x0007
+	volatile uint32_t SPI_RXCRCR; 		//SPI Rx CRC Register			(0x14)
+	volatile uint32_t SPI_TXCRCR; 		//SPI Tx CRC Register			(0x18)
+	volatile uint32_t SPI_I2SCFGR; 		//I2S Config Register			(0x1C)
+	volatile uint32_t SPI_I2SPR;		//I2S Prescaler Register		(0x20)
+
+}SPI_RegDef_t;
+
+//#define SPIx	((SPI_RegDef_t*))
+
+//**************************SPI Peripheral Definitions*************************************/
+/**************************SPI Register map on page 925 of RM*************************/
+#define SPI1				((SPI_RegDef_t*)SPI_1_BASE_ADDR)
+#define SPI2				((SPI_RegDef_t*)SPI_2_BASE_ADDR)
+#define SPI3				((SPI_RegDef_t*)SPI_3_BASE_ADDR)
+#define SPI4				((SPI_RegDef_t*)SPI_4_BASE_ADDR)
+#define SPI5				((SPI_RegDef_t*)SPI_5_BASE_ADDR)
+#define SPI6				((SPI_RegDef_t*)SPI_6_BASE_ADDR)
+
+//APB1 Peripherals
+#define SPI_2_BASE_ADDR		(APB1_PERIPH_BASE + 0x3800)
+#define SPI_3_BASE_ADDR		(APB1_PERIPH_BASE + 0x3C00)
+
+//APB2 Peripherals - SPI
+#define SPI_1_BASE_ADDR		(APB2_PERIPH_BASE + 0x3000)
+#define SPI_4_BASE_ADDR		(APB2_PERIPH_BASE + 0x3400)
+#define SPI_5_BASE_ADDR		(APB2_PERIPH_BASE + 0x5000)
+#define SPI_6_BASE_ADDR		(APB2_PERIPH_BASE + 0x5400)
+
+//Clock Enable/Disable Macros for SPIx Peripherals
+#define SPI_1_PCLK_EN()		(RCC->RCC_APB2ENR |= (1 << 12))
+#define SPI_2_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 14))
+#define SPI_3_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 15))
+#define SPI_4_PCLK_EN()		(RCC->RCC_APB2ENR |= (1 << 13))
+
+#define SPI_1_PCLK_DI()		(RCC->RCC_APB2ENR &= ~(1 << 12))
+#define SPI_2_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 14))
+#define SPI_3_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 15))
+#define SPI_4_PCLK_DI()		(RCC->RCC_APB2ENR &= ~(1 << 13))
+
+/*SPI Register Disable Macros*/
+#define SPI_1_REG_RESET()	(RCC->RCC_APB2RSTR |= (1 << 12))
+#define SPI_2_REG_RESET()	(RCC->RCC_APB1RSTR |= (1 << 14))
+#define SPI_3_REG_RESET()	(RCC->RCC_APB1RSTR |= (1 << 15))
+#define SPI_4_REG_RESET()	(RCC->RCC_APB2RSTR |= (1 << 13))
+
+ /* Bit Position Definitions of the SPI Peripheral */
+
+/*SPI_CR1*/
+#define SPI_CR1_CPHA		0
+#define SPI_CR1_CPOL		1
+#define SPI_CR1_MSTR		2
+#define SPI_CR1_BAUD_R3		3
+#define SPI_CR1_BAUD_R4		4
+#define SPI_CR1_BAUD_R5		5
+#define SPI_CR1_SPE			6
+#define SPI_CR1_LSB_FIRST	7
+#define SPI_CR1_SSI			8
+#define SPI_CR1_SSM			9
+#define SPI_CR1_RX_ONLY		10
+#define SPI_CR1_DFF			11
+#define SPI_CR1_CRC_NEXT	12
+#define SPI_CR1_CRC_EN		13
+#define SPI_CR1_BIDI_OE		14
+#define SPI_CR1_BIDI_MODE	15
+
+/*SPI_CR2*/
+#define SPI_CR2_RXDMAEN		0
+#define SPI_CR2_TXDMAEN		1
+#define SPI_CR2_SSOE		2
+#define SPI_CR2_FRF			4
+#define SPI_CR2_ERRIE		5
+#define SPI_CR2_RXNEIE		6
+#define SPI_CR2_TXNEIE		7
+
+/*SPI_SR*/
+#define SPI_SR_RXNE			0
+#define SPI_SR_TXE			1
+#define SPI_SR_CHSIDE		2
+#define SPI_SR_UDR			3
+#define SPI_SR_CRC_ERR		4
+#define SPI_SR_MODF			5
+#define SPI_SR_OVR			6
+#define SPI_SR_BSY			7
+#define SPI_SR_FRE			8
+
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/**************************I2C Register map on page 872 of RM*************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+
+typedef struct
+{
+	volatile uint32_t I2C_R1;			//Control register 1			(0x00)
+	volatile uint32_t I2C_CR2;			//Control registers 2		 	(0x04)
+	volatile uint32_t I2C_OAR1;			//Own Address Register 1		(0x08)								(0x08)
+	volatile uint32_t I2C_OAR2;			//Own Address Register			(0x0C)
+	volatile uint32_t I2C_DR; 			//Data register 				(0x10)
+    volatile uint32_t I2C_SR1; 			//Status register 				(0x14)				Reset value: 0x0000
+    volatile uint32_t I2C_SR2; 			//Status register 				(0x18)				Reset value: 0x0000
+	volatile uint32_t I2C_CCR;	 		//I2C CRC Polynomial register	(0x1C)				Reset value: 0x0000
+	volatile uint32_t I2C_TRISE; 		//I2C Rx CRC Register			(0x20)				Reset value: 0x2
+	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register			(0x24)
+}I2C_RegDef_t;
+
+
+#define I2C1RST				21
+#define I2C2RST				22
+#define I2C3RST				23
+
+#define I2C1EN				I2C1RST
+#define I2C2EN				I2C2RST
+#define I2C3EN				I2C3RST
+
+/*I2Cx Base Addresses*/
+#define I2C1_BASE_ADDR		(APB1_PERIPH_BASE + 5400)
+#define I2C2_BASE_ADDR		(APB1_PERIPH_BASE + 5800)
+#define I2C3_BASE_ADDR		(APB1_PERIPH_BASE + 5C00)
+
+/*Pointers to I2Cx Base Addresses*/
+#define I2C1 				((I2C_RegDef_t*)(I2C1_BASE_ADDR))
+#define I2C2 				((I2C_RegDef_t*)(I2C2_BASE_ADDR))
+#define I2C3 				((I2C_RegDef_t*)(I2C3_BASE_ADDR))
+
+/*I2Cx Clock Enable/Disable Macros*/
+#define I2C_1_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C1EN))
+#define I2C_2_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C2EN))
+#define I2C_3_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C3EN))
+
+#define I2C_1_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C1EN))
+#define I2C_2_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C2EN))
+#define I2C_3_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C3EN))
+
+/*I2Cx Register Reset Macros*/
+#define I2C_1_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C1RST))
+#define I2C_2_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C2RST))
+#define I2C_3_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C3RST))
+
+/* Bit Position Definitions of the SPI Peripheral */
+
+/* I2C_CR1 */
+#define PE				0
+#define SMBU			1
+#define RESERVED2		2
+#define SMBTYPE			3
+#define ENARP			4
+#define ENPEC			5
+#define ENGC			6
+#define NO_STRETCH		7
+#define START			8
+#define STOP			9
+#define ACK				10
+#define POS				11
+#define PEC				12
+#define ALERT			13
+#define RESERVED14      14
+#define SWRST			15
+
+/*I2C_CR2*/
+#define FREQ0			0
+#define FREQ1			1
+#define FREQ2			2
+#define FREQ3			3
+#define FREQ4			4
+#define FREQ5			5
+#define ITERREN			8
+#define ITEVTEN			9
+#define ITBUFEN			10
+#define DMAEN			11
+#define LAST			12
+
+/*I2C_OAR1*/
+#define ADD_0 			0
+#define ADD1			1
+#define ADD2			2
+#define ADD3			3
+#define ADD4			4
+#define ADD5			5
+#define ADD6			6
+#define ADD7			7
+#define ADD8			8
+#define ADD9			9
+#define ADD_MODE		15
+
+/*I2C_OAR2*/
+#define ENDUAL			0
+#define ADD2_1			1
+#define ADD2_2			2
+#define ADD2_3			3
+#define ADD2_4			4
+#define ADD2_5			5
+#define ADD2_6			6
+#define ADD2_7			7
+
+/*I2C_SR1*/
+#define SB				0
+#define ADDR			1
+#define BTF				2
+#define ADD10			3
+#define STOPF			4
+#define RxNE			6
+#define	TxE				7
+#define	BERR			8
+#define	ARLO			9
+#define	AF				10
+#define	OVR				11
+#define	PEC_ERR			12
+#define TIMEOUT			13
+#define SMB_ALERT		15
+
+/*I2C_SR2*/
+
+/*I2C_CCR*/
+#define CCR0			0
+#define CCR1			1
+#define CCR2			2
+#define CCR3			3
+#define CCR4			4
+#define CCR5			5
+#define CCR6			6
+#define CCR7			7
+#define CCR8			8
+#define CCR9			9
+#define CCR10			10
+#define CCR11			11
+#define DUTY			14
+#define FS				15
+
+
+/*Peripheral Interrupt Requests*/
 /* MCU1 - 110 - 111
  *  IRQ (Interrupt Request) Number o STM32F407x MCU
  *  NOTE: Update these macros with valid values according to you MCU
@@ -314,50 +542,9 @@ typedef struct
 #define NVIC_IRQ_PRIO15		15
 
 
-//**************************SPI Peripheral Definitions*************************************/
-/**************************SPI Register map on page 925 of RM*************************/
-#define SPI1				((SPI_RegDef_t*)SPI_1_BASE_ADDR)
-#define SPI2				((SPI_RegDef_t*)SPI_2_BASE_ADDR)
-#define SPI3				((SPI_RegDef_t*)SPI_3_BASE_ADDR)
-#define SPI4				((SPI_RegDef_t*)SPI_4_BASE_ADDR)
-#define SPI5				((SPI_RegDef_t*)SPI_5_BASE_ADDR)
-#define SPI6				((SPI_RegDef_t*)SPI_6_BASE_ADDR)
 
-//APB1 Peripherals
-#define SPI_2_BASE_ADDR		(APB1_PERIPH_BASE + 0x3800)
-#define SPI_3_BASE_ADDR		(APB1_PERIPH_BASE + 0x3C00)
 
-//APB2 Peripherals - SPI
-#define SPI_1_BASE_ADDR		(APB2_PERIPH_BASE + 0x3000)
-#define SPI_4_BASE_ADDR		(APB2_PERIPH_BASE + 0x3400)
-#define SPI_5_BASE_ADDR		(APB2_PERIPH_BASE + 0x5000)
-#define SPI_6_BASE_ADDR		(APB2_PERIPH_BASE + 0x5400)
 
-//Clock Enable/Disable Macros for SPIx Peripherals
-#define SPI_1_PCLK_EN()		(RCC->RCC_APB2ENR |= (1 << 12))
-#define SPI_2_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 14))
-#define SPI_3_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 15))
-#define SPI_4_PCLK_EN()		(RCC->RCC_APB2ENR |= (1 << 13))
-
-#define SPI_1_PCLK_DI()		(RCC->RCC_APB2ENR &= ~(1 << 12))
-#define SPI_2_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 14))
-#define SPI_3_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 15))
-#define SPI_4_PCLK_DI()		(RCC->RCC_APB2ENR &= ~(1 << 13))
-
-/*SPI Register Disable Macros*/
-#define SPI_1_REG_RESET()	(RCC->RCC_APB2RSTR |= (1 << 12))
-#define SPI_2_REG_RESET()	(RCC->RCC_APB1RSTR |= (1 << 14))
-#define SPI_3_REG_RESET()	(RCC->RCC_APB1RSTR |= (1 << 15))
-#define SPI_4_REG_RESET()	(RCC->RCC_APB2RSTR |= (1 << 13))
-
-//Clock Enable/Disable Macros for I2Cx Peripherals
-#define I2C_1_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 21))
-#define I2C_2_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 22))
-#define I2C_3_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << 23))
-
-#define I2C_1_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 21))
-#define I2C_2_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 22))
-#define I2C_3_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << 23))
 
 //Clock Enable Macros for USARTx Peripherals
 #define USART_2_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 17))
@@ -371,47 +558,8 @@ typedef struct
 #define SYSCFG_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 14))
 
 
-/*****************************************************************************************
- Bit Position Definitions of the SPI Peripheral ******************************************
- *****************************************************************************************/
-/*SPI_CR1*/
-#define SPI_CR1_CPHA		0
-#define SPI_CR1_CPOL		1
-#define SPI_CR1_MSTR		2
-#define SPI_CR1_BAUD_R3		3
-#define SPI_CR1_BAUD_R4		4
-#define SPI_CR1_BAUD_R5		5
-#define SPI_CR1_SPE			6
-#define SPI_CR1_LSB_FIRST	7
-#define SPI_CR1_SSI			8
-#define SPI_CR1_SSM			9
-#define SPI_CR1_RX_ONLY		10
-#define SPI_CR1_DFF			11
-#define SPI_CR1_CRC_NEXT	12
-#define SPI_CR1_CRC_EN		13
-#define SPI_CR1_BIDI_OE		14
-#define SPI_CR1_BIDI_MODE	15
 
-/*SPI_CR2*/
-#define SPI_CR2_RXDMAEN		0
-#define SPI_CR2_TXDMAEN		1
-#define SPI_CR2_SSOE		2
-#define SPI_CR2_FRF			4
-#define SPI_CR2_ERRIE		5
-#define SPI_CR2_RXNEIE		6
-#define SPI_CR2_TXNEIE		7
 
-/*SPI_SR*/
-#define SPI_SR_RXNE			0
-#define SPI_SR_TXE			1
-#define SPI_SR_CHSIDE		2
-#define SPI_SR_UDR			3
-#define SPI_SR_CRC_ERR		4
-#define SPI_SR_MODF			5
-#define SPI_SR_OVR			6
-#define SPI_SR_BSY			7
-#define SPI_SR_FRE			8
 
-/*SPI_DR*/
 
 #endif /* INC_STM32F407G_H_ */
