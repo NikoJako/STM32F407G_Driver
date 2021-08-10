@@ -159,7 +159,7 @@
 	 }
  }
 
- uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName, uint8_t maskINfo) // @suppress("No return")
+ uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName) // @suppress("No return") uint8_t maskINfo
  {
 
 	 uint8_t res = 0;
@@ -188,7 +188,7 @@
 	  * no need to wait, need to check the DFF bit
 	  *
 	  * if tx buffer isn't empty...*/
-	 if(!(pSPIx->SPI_SR & SPI_TXE_FLAG))
+	 if(!(pSPIx->SPI_SR & FlagName))
 	 {
 		 res = FLAG_RESET;
 	 }
@@ -219,7 +219,7 @@
 		  * if something breaks on the SPI peripheral, there is a chance
 		  * that the code could hang here permanently - need watchdog
 		  * timer */
-		 while(SPI_GetFlag_Status(pSPIx, SPI_SR_TXE, SPI_TXE_FLAG) == FLAG_RESET);
+		 while(SPI_GetFlag_Status(pSPIx, SPI_SR_TXE) == FLAG_RESET);
 
 		 /*Check the DFF value (11th bit in SPI_CR)
 		  * 0 means set to 8-bit
@@ -273,7 +273,36 @@
  }
  void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
  {
+	 /*While there is data to be received*/
+	 while(!(len > 0))
+	 {
+		 /*If the receive buffer hasn't received anything yet wait here
+		  * otherwise check the DFF bit*/
+		 while(SPI_GetFlag_Status(pSPIx, SPI_RXNE_FLAG) == RESET);
 
+		 if(pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
+		 {
+			 /*Move the received data in the SPI_DR into the pRxBuffer */
+			 *((uint16_t*)pRxBuffer) = pSPIx->SPI_DR;
+
+			 len--;
+			 len --;
+
+			 /*type casting and incrementing once is the same incrementing
+			  * pTxBuffer twice*/
+			 (uint16_t*)pRxBuffer++;
+		 }
+		 else
+		 {
+			 /*8-bit - Move 1 byte of received data in the SPI_DR
+			  * into the pRxBuffer and increment the buffer address*/
+			  *pRxBuffer = pSPIx->SPI_DR;
+
+			 len--;
+
+			 pRxBuffer++;
+		 }
+	 }
  }
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI)
  {

@@ -185,10 +185,13 @@ int main(void)
 		SPI_SendData(SPI2, &dataLen, 1);
 
 		/* 6. Send Data
-	 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
-	 * remember that user_data == uint8_t
-	 * since we're using strlen we need to include string.h*/
+		 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
+		 * remember that user_data == uint8_t
+		 * since we're using strlen we need to include string.h*/
 		SPI_SendData(SPI2, (uint8_t*)user_data, strlen(user_data));
+
+		/*Receive Data*/
+
 
 		/*Before disabling the SPI peripheral make sure its not
 		 * transmitting data
@@ -196,7 +199,7 @@ int main(void)
 		 * if SPI_GetFlag_Status returns 1 program will hang here
 		 *
 		 * otherwise it'll disable SPI2 */
-		while(SPI_GetFlag_Status(SPI2, SPI_SR_BSY, SPI_BSY_FLAG));
+		while(SPI_GetFlag_Status(SPI2, SPI_SR_BSY));
 
 		/*Might cause problems*/
 		SPI_Peripheral_Control(SPI2, DISABLE);

@@ -113,7 +113,7 @@
 
  /*
     * SPI related status flag definitions
-    *
+    * aka "masking info"
     * */
 #define SPI_RXNE_FLAG			(1 << SPI_SR_RXNE)
 #define SPI_TXE_FLAG			(1 << SPI_SR_TXE)
@@ -150,7 +150,7 @@
  void SPI_DeInit(SPI_Handle_t *pSPIHandle);
 
  /* maskINfo values should be macros on lines 118-126 above*/
- uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName, uint8_t maskINfo);
+ uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName);
 
  /* Data Send and Receive
   * *pSPIx user-provided pointer to the data to be sent
