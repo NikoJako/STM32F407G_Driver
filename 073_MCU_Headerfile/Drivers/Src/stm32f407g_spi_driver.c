@@ -82,13 +82,15 @@
 	 	the job of all these functions is to apply the
 	 	values to the HW
 	  * */
-	  uint32_t tempreg = 0;
+	  uint32_t tempreg;
 
 	  /* SHould we first clear CR1 to rid it of garbage values?
 	  	 ANS - no since all the changes are being made to tempreg
 	  	 which is initialized to 0. WHen all the changes are made
 	  	 we set CR1 = tempreg, overwriting any garbage value CR1
 	  	 may already have
+
+	  	 *remember (value << location)*
 	  */
 
 	  /*1. DeviceMode*/
@@ -162,7 +164,7 @@
  uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName) // @suppress("No return") uint8_t maskINfo
  {
 
-	 uint8_t res = 0;
+
 	 /*
 	  * SPI_SR_RXNE			Receive buffer not empty
 	  * SPI_SR_TXE			Transmit buffer empty
@@ -190,14 +192,14 @@
 	  * if tx buffer isn't empty...*/
 	 if(!(pSPIx->SPI_SR & FlagName))
 	 {
-		 res = FLAG_RESET;
+		 return FLAG_RESET;
 	 }
 	 else
 	 {
-		 res = FLAG_SET;
+		 return FLAG_SET;
 	 }
 
-	 return res;
+
  }
 
  /* Data Send and Receive
@@ -219,8 +221,8 @@
 		  * if something breaks on the SPI peripheral, there is a chance
 		  * that the code could hang here permanently - need watchdog
 		  * timer */
-		 while(SPI_GetFlag_Status(pSPIx, SPI_SR_TXE) == FLAG_RESET);
 
+		 while(SPI_GetFlag_Status(pSPIx, SPI_TXE_FLAG) == FLAG_RESET);
 		 /*Check the DFF value (11th bit in SPI_CR)
 		  * 0 means set to 8-bit
 		  * 1 means set to 16-bit

@@ -109,20 +109,18 @@ void GPIO_ButtonInit()
 	 	 GPIO_PinConfig_t GPIO_PinConfig */
 	GPIO_Handle_t GPIO_btn;
 
-	// Configure the GPIOB for the LED
-	// set !APPLICABLE! GPIO_PinConfig members
-	GPIO_btn.pGPIOx = GPIOD;										//point the handle at GPIO port D
+	/* USER button is connected to PA0 on discovery board
+	 set !APPLICABLE! GPIO_PinConfig members to configure
+	 as INPUT PIN
+	 GPIO_PinSpeed & GPIO_PinOPType are used when pin is
+	 set to OUTPUT mode only*/
+	GPIO_btn.pGPIOx = GPIOA;										//point the handle at GPIO port A
 	GPIO_btn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_0;
-	GPIO_btn.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_OUTPUT;
-	GPIO_btn.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-	GPIO_btn.GPIO_PinConfig.GPIO_PinOPType = GPIO_OUTPUT_TYPE_PP;
-	GPIO_btn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PU;
+	GPIO_btn.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_INPUT;
+	GPIO_btn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
 
-	//Enable the clock for GPIOD
-	GPIO_PeriClkControl(GPIOD, ENABLE);
-
-	// Call API (stm32f407g_gpio_driver.c), send address of
-	// GPIO_Handle GPIO_btn
+	/* Call API (stm32f407g_gpio_driver.c), send address of
+	 GPIO_Handle GPIO_btn*/
 	GPIO_Init(&GPIO_btn);
 }
 
@@ -132,7 +130,7 @@ int main(void)
 /*remember that user_data == uint8_t* */
 	char user_data[] = "hello world";
 
-	/* Configure and enable a GPIO port to handle the button press
+	/* Configure and enable a GPIOD port to handle the button press
 	 * data is to be sent only when the button is pressed*/
 	GPIO_ButtonInit();
 
@@ -171,7 +169,7 @@ int main(void)
 		 * 	1 if the button has been pressed
 		 * 	0 if not
 		 * */
-		while(!(GPIO_ReadFromInputPin(GPIOD, GPIO_PIN_NO_0)));
+		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
 
 
 		/*Add delay to address debouncing*/

@@ -202,7 +202,8 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		EXTI->EXTI_IMR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 	}
 
-	//2. OSPEEDR - Speed
+
+		//2. OSPEEDR - Speed
 	 temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinSpeed << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
 
 	 //clear required bit-fields
@@ -215,6 +216,21 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 		11: Very high speed*/
 	 pGPIOHandle->pGPIOx->OSPEEDR |= temp;
 	 temp = 0;
+
+	 //4. OTYPER - configure output type
+	 temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinOPType << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+
+	 //clear required bit-fields
+	 pGPIOHandle->pGPIOx->OTYPER &= ~(0x1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
+
+	 /*OTYPER - Set the output type:
+	  * 0: Output push-pull (reset state)
+		1: Output open-drain
+	  * */
+	 pGPIOHandle->pGPIOx->OTYPER |= temp;
+
+	 temp = 0;
+
 
 	//3. PUPDR - Configure the pull-up/pull-down settings into temp
 	 temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinPuPdControl << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
@@ -230,19 +246,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	 pGPIOHandle->pGPIOx->PUPDR |= temp;
 	 temp = 0;
 
-	//4. OTYPER - configure output type
-	 temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinOPType << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 
-	 //clear required bit-fields
-	 pGPIOHandle->pGPIOx->OTYPER &= ~(0x1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
-
-	 /*OTYPER - Set the output type:
-	  * 0: Output push-pull (reset state)
-		1: Output open-drain
-	  * */
-	 pGPIOHandle->pGPIOx->OTYPER |= temp;
-
-	 temp = 0;
 
 	 //5. configure the alt functionality, for this to mean anything, PinMode must be set to AltFunc mode
 	 /* temp1 calculation determines what alt function register (High|Low) needs to be configured
