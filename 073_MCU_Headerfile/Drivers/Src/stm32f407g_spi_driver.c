@@ -196,6 +196,7 @@
 	 }
 	 else
 	 {
+		 /*Tx buffer is Empty */
 		 return FLAG_SET;
 	 }
 
@@ -215,7 +216,8 @@
 	 while(len > 0)
 	 {
 		 /*Get TXE flag status in CR1
-		  * if the Tx buffer is empty then wait here
+		  * if the Tx buffer isn't empty then wait here for remaining data
+		  * to be sent,
 		  * otherwise move on to checking the DFF flag
 		  *
 		  * if something breaks on the SPI peripheral, there is a chance
