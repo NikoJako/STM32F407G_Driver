@@ -277,8 +277,8 @@
  }
  void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
  {
-	 /*While there is data to be received*/
-	 while(!(len > 0))
+	 /*While there is data to be received */
+	 while(len > 0)
 	 {
 		 /*If the receive buffer hasn't received anything yet wait here
 		  * otherwise check the DFF bit*/

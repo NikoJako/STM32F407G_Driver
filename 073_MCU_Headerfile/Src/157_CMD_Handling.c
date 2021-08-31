@@ -27,8 +27,8 @@
  * 'ACK' conflicts with an I2C_CR1
  * bit position definition in
  * stm32f407g.h (line 426)*/
-#define NACK 					0xA5
-#define ACKN					0xF5
+#define NACK 					0xA5		// 165 in decimal
+#define ACKN					0xF5		// 245 in decimal
 
 /*Arduino Analog Pins*/
 #define ANALOG_PIN0				0
@@ -233,9 +233,9 @@ int main(void)
 		 * cmd_code & slave_response needs to be uint16_t or
 		 * typecasted to uint16_t*/
 		uint8_t cmd_code = COMMAND_LED_CTRL;
-		uint8_t slave_response;
+		uint8_t ack_byte;
 		uint8_t cmd_args[2];
-		uint8_t dummy_write;
+		uint8_t dummy_write = DUMMY_BYTE;
 		uint8_t dummy_read;
 
 		/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
@@ -251,24 +251,26 @@ int main(void)
 		/*Dummy read to clear RXNE register
 		 * whenever data is sent to a slave device,
 		 * 1-byte is returned to the SPI master
-		 * when it reaches the master, the RXNE bit will be set
-		 * to clear a "dummy read" is performed to clear the RXNE bit*/
+		 * when it reaches the master, the RXNE bit will be set.
+		 *
+		 * If this is the first send after a reset,
+		 * there is a good chance the slave's RxBuffer
+		 * has some garbage value so,
+		 * to clear the garbage and the RXNE bit,
+		 * a "dummy read" is performed*/
 		SPI_ReceiveData(SPI2, &dummy_read,1);
 
 		/* When the slave receives this command
 		 * it checks if the command is valid
-		 * if valid, slave returns ACK
-		 * if invalid, slave returns NACK
-		 * the slave can't initiate communication
-		 * therefore a dummy byte needs to be sent to receive the slave'e reply
-		 * update TxBuffer with dummy byte:*/
-		dummy_write = DUMMY_BYTE;
-
-		/*Send dummy byte to fetch response from slave*/
+		 * and then queues up a response in its
+		 * RxBuffer (ACK or NACK), but can't send it
+		 * because the slave can't initiate communication
+		 * therefore dummy bytes are sent to allow the slave
+		 * to send its reply*/
 		SPI_SendData(SPI2, &dummy_write, 1);
 
 		/*Receive response from slave*/
-		SPI_ReceiveData(SPI2, &slave_response,1);
+		SPI_ReceiveData(SPI2, &ack_byte,1);
 
 		/*Determine if the command sent to slave was valid or not
 		 *
@@ -276,18 +278,21 @@ int main(void)
 		 * then the sent command was valid (ACK)
 		 * and we want to enter the if statement
 		 * to send the command arguments*/
-		if (SPI_Verify_Response(&slave_response))
+		if (SPI_Verify_Response(&ack_byte))
 		{
 			/*Send command arguments in array
 			 * 'turn the LED pin on the arduino on' */
 			cmd_args[0] = LED_PIN;
 			cmd_args[1] = LED_ON;
 
-			SPI_SendData(SPI2, &cmd_args[0], 2);
+			SPI_SendData(SPI2, cmd_args, 2);
 		}
 
-		/* Wait here for button press */
-		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
+		/* Confirm SPI2 isn't busy before disabling */
+		//while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
+
+		/*Might cause problems*/
+		//SPI_Peripheral_Control(SPI2, DISABLE);
 
 
 
@@ -314,9 +319,9 @@ int main(void)
 		SPI_SendData(SPI2, &dummy_write, 1);
 
 		/*Receive response from slave*/
-		SPI_ReceiveData(SPI2, &slave_response,1);
+		SPI_ReceiveData(SPI2, &ack_byte,1);
 
-		if (SPI_Verify_Response(&slave_response))
+		if (SPI_Verify_Response(&ack_byte))
 		{
 			/*Send COMMAND_SENSOR_READ argument
 			 * analog pin number = ANALOG_PIN0*/
@@ -364,7 +369,7 @@ int main(void)
 		 * if SPI_GetFlag_Status returns 1 program will hang here
 		 *
 		 * otherwise it'll disable SPI2 */
-		while(SPI_GetFlag_Status(SPI2, SPI_SR_BSY));
+		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
 
 		/*Might cause problems*/
 		SPI_Peripheral_Control(SPI2, DISABLE);
