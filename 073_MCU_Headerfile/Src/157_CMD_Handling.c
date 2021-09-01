@@ -21,7 +21,7 @@
 #define COMMAND_SENSOR_READ		0x51
 #define COMMAND_LED_READ		0x52
 #define COMMAND_PRINT			0x53
-#define COMMAND_IDREAD			0x54
+#define COMMAND_ID_READ			0x54
 
 /*SPI Command Responses
  * 'ACK' conflicts with an I2C_CR1
@@ -43,6 +43,7 @@
 /*Dummy byte to receive ACK or NACK from slave*/
 #define DUMMY_BYTE				0xFF
 
+/*roughly 200mS delay*/
 void delay(void)
 {
 	for(uint32_t i = 0; i < 500000/2; i++);
@@ -169,6 +170,28 @@ uint8_t SPI_Verify_Response(uint8_t *ack_byte)
 	}
 }
 
+//void SPI_Slave_Commands()
+//{
+//	/*used to keep track of what command to send next
+//	can't be destroyed when function is done*/
+//	uint8_t cmd_count = 0;
+//
+//	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
+//
+//	/* Rx & Tx Buffers*/
+//	uint8_t ack_byte;
+//	uint8_t cmd_args[2];
+//	uint8_t dummy_write = DUMMY_BYTE;
+//	uint8_t dummy_read;
+//
+//	/*	1. check if SPIx is enabledb*/
+//	if((SPI_GetFlag_Status(pSPIx, SPI_SPE_FLAG) == RESET))
+//	{
+//		/*Enable SPIx*/
+//		SPI_Peripheral_Control(SPI2, ENABLE);
+//	}
+//}
+
 int main(void)
 {
 
@@ -223,7 +246,13 @@ int main(void)
 
 
 		/*Sending Commands*/
-
+		/* @To-Do create function to:
+		 * Send command
+		 * Dummy Read to clear RXNE register
+		 * Send dummy byte to fetch response from slave
+		 * Receive Response from slave
+		 * Verify Response from slave*/
+		//SPI_Send_Commands()
 
 
 		/* 6. Create TxBuffer & RxBuffer to store command code & response from
@@ -237,6 +266,7 @@ int main(void)
 		uint8_t cmd_args[2];
 		uint8_t dummy_write = DUMMY_BYTE;
 		uint8_t dummy_read;
+		uint8_t analog_read;
 
 		/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
 		 *
@@ -294,14 +324,10 @@ int main(void)
 		/*Might cause problems*/
 		//SPI_Peripheral_Control(SPI2, DISABLE);
 
+		/*wait here for next button press*/
+		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
 
 
-		/* @To-Do create function to:
-		 * Send command
-		 * Dummy Read to clear RXNE register
-		 * Send dummy byte to fetch response from slave
-		 * Receive Response from slave
-		 * Verify Response from slave*/
 
 
 		/* 8. Send COMMAND_SENSOR_READ:*/
@@ -318,50 +344,35 @@ int main(void)
 		/*Send dummy byte to fetch response from slave*/
 		SPI_SendData(SPI2, &dummy_write, 1);
 
-		/*Receive response from slave*/
+		/*Receive ackbyte from slave*/
 		SPI_ReceiveData(SPI2, &ack_byte,1);
 
 		if (SPI_Verify_Response(&ack_byte))
 		{
-			/*Send COMMAND_SENSOR_READ argument
-			 * analog pin number = ANALOG_PIN0*/
+			/*Send COMMAND_SENSOR_READ argument */
 			cmd_args[0] = ANALOG_PIN0;
 
 			/*Send Arguments*/
-			SPI_SendData(SPI2, &cmd_args[0], 2);
+			SPI_SendData(SPI2, cmd_args, 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Add delay to allow slave to process ADC
+			 * our delay is ~ 200mS, too much but ok*/
+			delay();
+
+			/*Send dummy byte to fetch response from slave*/
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Get sensor value from slave and
+			 * Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &analog_read,1);
 		}
 
-		/* Receive Sensor Data from Slave */
-
-		/* Create RxBuffer */
-		uint8_t analog_read;
-
-		/*Dummy read to clear RXNE register*/
-		SPI_ReceiveData(SPI2, &dummy_read,1);
-
-		/*Send dummy byte to fetch response from slave*/
-		SPI_SendData(SPI2, &dummy_write, 1);
-
-		/*Receive response from slave*/
-		SPI_ReceiveData(SPI2, &analog_read,1);
-
-
-
-
-
-
-			/*	3. COMMAND_LED_READ		0x52
-				4. COMMAND_PRINT			0x53
-				5. COMMAND_IDREAD			0x54*/
-
-
-
-
-		//SPI_SendData(SPI2, &dataLen, 1);
-		//SPI_SendData(SPI2, (uint8_t*)user_data, strlen(user_data));
-
-		/*8. Receive Data*/
-
+		/*	3. COMMAND_LED_READ		0x52
+			4. COMMAND_PRINT			0x53
+			5. COMMAND_IDREAD			0x54*/
 
 		/*9. Before disabling the SPI peripheral make sure its not
 		 * transmitting data
