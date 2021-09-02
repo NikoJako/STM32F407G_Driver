@@ -252,7 +252,9 @@ int main(void)
 		 * Send dummy byte to fetch response from slave
 		 * Receive Response from slave
 		 * Verify Response from slave*/
-		//SPI_Send_Commands()
+		//SPI_Send_Commands();
+
+		//while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
 
 
 		/* 6. Create TxBuffer & RxBuffer to store command code & response from
@@ -318,17 +320,8 @@ int main(void)
 			SPI_SendData(SPI2, cmd_args, 2);
 		}
 
-		/* Confirm SPI2 isn't busy before disabling */
-		//while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
-
-		/*Might cause problems*/
-		//SPI_Peripheral_Control(SPI2, DISABLE);
-
-		/*wait here for next button press*/
+		/* wait here for next button press*/
 		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-
-
-
 
 		/* 8. Send COMMAND_SENSOR_READ:*/
 
@@ -370,9 +363,9 @@ int main(void)
 			SPI_ReceiveData(SPI2, &analog_read,1);
 		}
 
-		/*	3. COMMAND_LED_READ		0x52
+		/*	3. COMMAND_LED_READ			0x52
 			4. COMMAND_PRINT			0x53
-			5. COMMAND_IDREAD			0x54*/
+			5. COMMAND_ID_READ			0x54*/
 
 		/*9. Before disabling the SPI peripheral make sure its not
 		 * transmitting data
