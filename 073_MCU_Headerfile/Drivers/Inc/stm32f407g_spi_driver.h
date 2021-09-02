@@ -124,6 +124,7 @@
 #define SPI_OVR_FLAG			(1 << SPI_SR_OVR)
 #define SPI_BUSY_FLAG			(1 << SPI_SR_BSY)
 #define SPI_FRE_FLAG 			(1 << SPI_SR_FRE)
+#define SPI_SPE_FLAG			(1 << SPI_CR1_SPE)
 
  /*******************************************************************************************************************************************************************************
   *										APIs Supported By This Driver
