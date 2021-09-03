@@ -364,7 +364,7 @@ int main(void)
 		 * otherwise it'll disable SPI2 */
 		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
 
-		/*Might cause problems*/
+		/*Might cause problems - not sure how*/
 		SPI_Peripheral_Control(SPI2, DISABLE);
 
 		return 0;
