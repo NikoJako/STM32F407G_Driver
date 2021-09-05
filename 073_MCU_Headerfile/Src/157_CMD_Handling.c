@@ -43,6 +43,9 @@
 /*Dummy byte to receive ACK or NACK from slave*/
 #define DUMMY_BYTE				0xFF
 
+
+#define	MSG_1_SIZE				12
+
 void delay(void)
 {
 	for(uint32_t i = 0; i < 500000/2; i++);
@@ -134,6 +137,8 @@ void SPI2_Init()
 
 void GPIO_ButtonInit()
 {
+
+	printf("In GPIO_Init()");
 	/* create GPIO port handle to interface with button
 	 GPIO_Handle_t
 	 	 GPIO_RegDef_t *pGPIOx
@@ -182,10 +187,11 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
 
 	/* Rx & Tx Buffers*/
-	uint8_t ack_byte;
-	uint8_t cmd_args[2];
+	uint8_t ack_byte, dummy_read, analog_read, cmd_args[2];
 	uint8_t dummy_write = DUMMY_BYTE;
-	uint8_t dummy_read, analog_read;
+	char const *msg_1 = "Hello World";			/* string literal - stored in ROM, never loaded in RAM*/
+	char board_id[16];
+
 
 	/*	1. if SPIx is disabled...*/
 	if(SPI_GetFlag_Status(pSPIx, SPI_SPE_FLAG) == RESET)
@@ -199,6 +205,8 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 	{
 		if(cmd_code[i] == COMMAND_LED_CTRL)
 		{
+			printf("COMMAND_LED_CTRL\n");
+
 			/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
 			 *
 			 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
@@ -251,12 +259,20 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 		}
 		else if (cmd_code[i] == COMMAND_SENSOR_READ)
 		{
+			printf("COMMAND_SENSOR_READ\n");
+
+			/* Sending the COMMAND_SENSOR_READ command, while receiving
+			 * garbage value in the shift register of the Uno */
 			SPI_SendData(SPI2, &cmd_code[i], 1);
 
+			/* Dummy read to clear RXNE register */
 			SPI_ReceiveData(SPI2, &dummy_read,1);
 
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
 			SPI_SendData(SPI2, &dummy_write, 1);
 
+			/* Read the slave response and process */
 			SPI_ReceiveData(SPI2, &ack_byte,1);
 
 			if (SPI_Verify_Response(&ack_byte))
@@ -280,19 +296,95 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 				/* Get sensor value from slave and
 				 * Dummy read to clear RXNE register */
 				SPI_ReceiveData(SPI2, &analog_read,1);
+
+				printf("Sensor value is %d\n", analog_read);
 			}
 		}
 		else if (cmd_code[i] == COMMAND_LED_READ)
 		{
+			printf("COMMAND_LED_READ\n");
 
+			/*Send COMMAND_LED_READ command, while simultaneously
+			 * receiving garbage value in the shift register
+			 * of the Uno  */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				cmd_args[0] = LED_PIN;
+				cmd_args[1] = LED_ON;
+
+				/* Send the LED_READ arguments */
+				SPI_SendData(SPI2, cmd_args, 2);
+			}
 		}
 		else if (cmd_code[i] == COMMAND_PRINT)
 		{
+			printf("COMMAND_PRINT\n");
+
+			/* Sending the COMMAND_PRINT command, while receiving
+			 * garbage value in the shift register of the Uno */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Read the slave response and process */
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				/* Length of message */
+				cmd_args[0] = MSG_1_SIZE;
+
+				/* Message
+				 * See Section 43, Lecture 160 for additional info
+				 * about (uintptr_t)*/
+				cmd_args[1] = (uint8_t)(uintptr_t)msg_1;
+
+				/* Send the COMMAND_PRINT arguments */
+				SPI_SendData(SPI2, cmd_args, 2);
+
+				/* Slave is to display the message and return
+				 * nothing to the master */
+			}
 
 		}
 		else if (cmd_code[i] == COMMAND_ID_READ)
 		{
+			printf("COMMAND_ID_READ\n");
 
+			/* Sending the COMMAND_ID_READ command, while receiving
+			 * garbage value in the shift register of the Uno */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Read the slave response and process */
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			/* Slave only returns a 10-byte
+			 * board-ID string  */
+
+			printf("Board-ID string : %c\n", board_id);
 		}
 
 		/* Hang here until next button press*/
@@ -303,8 +395,7 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 
 int main(void)
 {
-
-/* Configure and enable a GPIOD port to handle the button press
+	/* Configure and enable a GPIOD port to handle the button press
  * data is to be sent only when the button is pressed*/
 	GPIO_ButtonInit();
 

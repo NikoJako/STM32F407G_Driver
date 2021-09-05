@@ -5,6 +5,7 @@
  *      Author: njacobs
  */
 
+#include <stdio.h>
 #include "stm32f407g.h"
 #include "stm32f407g_gpio_driver.h"
 
@@ -119,6 +120,8 @@ void GPIO_PeriClkControl(GPIO_RegDef_t *pGPIOx, uint8_t ENorDI)
 */
 void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 {
+
+
 	/* Enable the clock for the GPIOB peripheral*/
 	GPIO_PeriClkControl(pGPIOHandle->pGPIOx, ENABLE);
 

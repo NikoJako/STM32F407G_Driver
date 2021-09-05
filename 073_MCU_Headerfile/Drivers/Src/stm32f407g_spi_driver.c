@@ -161,7 +161,7 @@
 	 }
  }
 
- uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName) // @suppress("No return") uint8_t maskINfo
+ uint8_t SPI_GetFlag_Status(SPI_RegDef_t *pSPIx, uint32_t FlagName)
  {
 
 

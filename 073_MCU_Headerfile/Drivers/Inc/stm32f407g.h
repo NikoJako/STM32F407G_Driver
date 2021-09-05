@@ -500,10 +500,10 @@ typedef struct
 #define DUTY			14
 #define FS				15
 
-
 /*Peripheral Interrupt Requests*/
 /* MCU1 - 110 - 111
- *  IRQ (Interrupt Request) Number o STM32F407x MCU
+ *  IRQ (Interrupt Request) Number on STM32F407x MCU
+ *  Listed in position column on pg 373 in RM
  *  NOTE: Update these macros with valid values according to you MCU
  *  TODO: Complete this list for other peripherals
  *  */
@@ -513,8 +513,9 @@ typedef struct
 #define IRQ_NO_EXTI3			9
 #define IRQ_NO_EXTI4			10
 #define IRQ_NO_EXTI5_9			23
+#define IRQ_NO_SPI1				35
+#define IRQ_NO_SPI2				36
 #define IRQ_NO_EXTI10_15		40
-
 
 /* MCU1 - 114
  *  Processor side - NVIC IRQ (Interrupt Request) Priority
@@ -541,11 +542,6 @@ typedef struct
 #define NVIC_IRQ_PRIO14		14
 #define NVIC_IRQ_PRIO15		15
 
-
-
-
-
-
 //Clock Enable Macros for USARTx Peripherals
 #define USART_2_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 17))
 #define USART_3_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 18))
@@ -556,10 +552,5 @@ typedef struct
 
 #define EXTI_PCLK_EN()		(EXTI->RCC_APB1ENR |= (1 << 14))
 #define SYSCFG_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 14))
-
-
-
-
-
 
 #endif /* INC_STM32F407G_H_ */
