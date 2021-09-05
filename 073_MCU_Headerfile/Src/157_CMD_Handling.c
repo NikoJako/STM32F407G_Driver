@@ -43,6 +43,8 @@
 /*Dummy byte to receive ACK or NACK from slave*/
 #define DUMMY_BYTE				0xFF
 
+#define	MSG_1_SIZE				12
+
 /*roughly 200mS delay*/
 void delay(void)
 {
@@ -135,6 +137,8 @@ void SPI2_Init()
 
 void GPIO_ButtonInit()
 {
+
+	printf("In GPIO_Init()");
 	/* create GPIO port handle to interface with button
 	 GPIO_Handle_t
 	 	 GPIO_RegDef_t *pGPIOx
@@ -170,32 +174,229 @@ uint8_t SPI_Verify_Response(uint8_t *ack_byte)
 	}
 }
 
-//void SPI_Slave_Commands()
-//{
-//	/*used to keep track of what command to send next
-//	can't be destroyed when function is done*/
-//	uint8_t cmd_count = 0;
-//
-//	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
-//
-//	/* Rx & Tx Buffers*/
-//	uint8_t ack_byte;
-//	uint8_t cmd_args[2];
-//	uint8_t dummy_write = DUMMY_BYTE;
-//	uint8_t dummy_read;
-//
-//	/*	1. check if SPIx is enabledb*/
-//	if((SPI_GetFlag_Status(pSPIx, SPI_SPE_FLAG) == RESET))
-//	{
-//		/*Enable SPIx*/
-//		SPI_Peripheral_Control(SPI2, ENABLE);
-//	}
-//}
+void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
+{
+	/*used to keep track of what command to send next
+	can't be destroyed when function is done*/
+	//uint8_t const cmd_count = 0;
+
+	/* case 3 modifiable data and constant pointer
+	use this to update the value of cmd_count*/
+	//uint8_t *ptr_cmd_count = (uint8_t*)&cmd_count
+
+	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
+
+	/* Rx & Tx Buffers*/
+	uint8_t ack_byte, dummy_read, analog_read, cmd_args[2];
+	uint8_t dummy_write = DUMMY_BYTE;
+	char const *msg_1 = "Hello World";			/* string literal - stored in ROM, never loaded in RAM*/
+	char board_id[16];
+
+
+	/*	1. if SPIx is disabled...*/
+	if(SPI_GetFlag_Status(pSPIx, SPI_SPE_FLAG) == RESET)
+	{
+		/* 5. ENABLE the SPIx peripheral SPE bit in the CR*/
+		SPI_Peripheral_Control(SPI2, ENABLE);
+
+	}
+
+	for(uint8_t i = 0; i < 5; ++i)
+	{
+		if(cmd_code[i] == COMMAND_LED_CTRL)
+		{
+			printf("COMMAND_LED_CTRL\n");
+
+			/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
+			 *
+			 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
+			 * remember that pTxBuffer == uint8_t
+			 *
+			 * REMEMBER if DFF == 16-bits
+			 * cmd_code needs to be uint16_t or typecasted to uint16_t
+			 * and number of bytes sent a.k.a 'len' needs to be '2'*/
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+				/*Dummy read to clear RXNE register
+			 * whenever data is sent to a slave device,
+			 * 1-byte is returned to the SPI master
+			 * when it reaches the master, the RXNE bit will be set.
+			 *
+			 * If this is the first send after a reset,
+			 * there is a good chance the slave's RxBuffer
+			 * has some garbage value so,
+			 * to clear the garbage and the RXNE bit,
+			 * a "dummy read" is performed*/
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* When the slave receives this command
+			 * it checks if the command is valid
+			 * and then queues up a response in its
+			 * RxBuffer (ACK or NACK), but can't send it
+			 * because the slave can't initiate communication
+			 * therefore dummy bytes are sent to allow the slave
+			 * to send its reply*/
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/*Receive response from slave*/
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			/*Determine if the command sent to slave was valid or not
+			 *
+			 * If SPI_Verify_Response (&slave_response) returns '1'
+			 * then the sent command was valid (ACK)
+			 * and we want to enter the if statement
+			 * to send the command arguments*/
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				/*Send command arguments in array
+				 * 'turn the LED pin on the arduino on' */
+				cmd_args[0] = LED_PIN;
+				cmd_args[1] = LED_ON;
+
+				SPI_SendData(SPI2, cmd_args, 2);
+			}
+		}
+		else if (cmd_code[i] == COMMAND_SENSOR_READ)
+		{
+			printf("COMMAND_SENSOR_READ\n");
+
+			/* Sending the COMMAND_SENSOR_READ command, while receiving
+			 * garbage value in the shift register of the Uno */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Read the slave response and process */
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				/*Send COMMAND_SENSOR_READ argument */
+				cmd_args[0] = ANALOG_PIN0;
+
+				/*Send Arguments*/
+				SPI_SendData(SPI2, cmd_args, 1);
+
+				/* Dummy read to clear RXNE register */
+				SPI_ReceiveData(SPI2, &dummy_read,1);
+
+				/* Add delay to allow slave to process ADC
+				 * our delay is ~ 200mS, too much but ok*/
+				delay();
+
+				/*Send dummy byte to fetch response from slave*/
+				SPI_SendData(SPI2, &dummy_write, 1);
+
+				/* Get sensor value from slave and
+				 * Dummy read to clear RXNE register */
+				SPI_ReceiveData(SPI2, &analog_read,1);
+
+				printf("Sensor value is %d\n", analog_read);
+			}
+		}
+		else if (cmd_code[i] == COMMAND_LED_READ)
+		{
+			printf("COMMAND_LED_READ\n");
+
+			/*Send COMMAND_LED_READ command, while simultaneously
+			 * receiving garbage value in the shift register
+			 * of the Uno  */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				cmd_args[0] = LED_PIN;
+				cmd_args[1] = LED_ON;
+
+				/* Send the LED_READ arguments */
+				SPI_SendData(SPI2, cmd_args, 2);
+			}
+		}
+		else if (cmd_code[i] == COMMAND_PRINT)
+		{
+			printf("COMMAND_PRINT\n");
+
+			/* Sending the COMMAND_PRINT command, while receiving
+			 * garbage value in the shift register of the Uno */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Read the slave response and process */
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			if (SPI_Verify_Response(&ack_byte))
+			{
+				/* Length of message */
+				cmd_args[0] = MSG_1_SIZE;
+
+				/* Message
+				 * See Section 43, Lecture 160 for additional info
+				 * about (uintptr_t)*/
+				cmd_args[1] = (uint8_t)(uintptr_t)msg_1;
+
+				/* Send the COMMAND_PRINT arguments */
+				SPI_SendData(SPI2, cmd_args, 2);
+
+				/* Slave is to display the message and return
+				 * nothing to the master */
+			}
+
+		}
+		else if (cmd_code[i] == COMMAND_ID_READ)
+		{
+			printf("COMMAND_ID_READ\n");
+
+			/* Sending the COMMAND_ID_READ command, while receiving
+			 * garbage value in the shift register of the Uno */
+			SPI_SendData(SPI2, &cmd_code[i], 1);
+
+			/* Dummy read to clear RXNE register */
+			SPI_ReceiveData(SPI2, &dummy_read,1);
+
+			/* Dummy write to get ACK or NACK from
+			 * slave regarding the command sent */
+			SPI_SendData(SPI2, &dummy_write, 1);
+
+			/* Read the slave response and process */
+			SPI_ReceiveData(SPI2, &ack_byte,1);
+
+			/* Slave only returns a 10-byte
+			 * board-ID string  */
+
+			printf("Board-ID string : %c\n", board_id);
+		}
+
+		/* Hang here until next button press*/
+		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
+	}
+
+}
+//>>>>>>> refs/heads/FEATURE-Add_SPI_Slave_Commands_Function
 
 int main(void)
 {
-
-/* Configure and enable a GPIOD port to handle the button press
+	/* Configure and enable a GPIOD port to handle the button press
  * data is to be sent only when the button is pressed*/
 	GPIO_ButtonInit();
 
@@ -236,136 +437,16 @@ int main(void)
 		 * */
 		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
 
-
-		/*Add delay to address debouncing*/
+		/* Add 200mS delay for switch debouncing */
 		delay();
 
-		/* 5. ENABLE the SPI2 peripheral SPE bit in the CR*/
-		SPI_Peripheral_Control(SPI2, ENABLE);
-
-
-
-		/*Sending Commands*/
 		/* @To-Do create function to:
 		 * Send command
 		 * Dummy Read to clear RXNE register
 		 * Send dummy byte to fetch response from slave
 		 * Receive Response from slave
 		 * Verify Response from slave*/
-		//SPI_Send_Commands();
-
-		//while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-
-
-		/* 6. Create TxBuffer & RxBuffer to store command code & response from
-		 * slave
-		 *
-		 * REMEMBER if DFF == 16-bits
-		 * cmd_code & slave_response needs to be uint16_t or
-		 * typecasted to uint16_t*/
-		uint8_t cmd_code = COMMAND_LED_CTRL;
-		uint8_t ack_byte;
-		uint8_t cmd_args[2];
-		uint8_t dummy_write = DUMMY_BYTE;
-		uint8_t dummy_read;
-		uint8_t analog_read;
-
-		/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
-		 *
-		 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
-		 * remember that pTxBuffer == uint8_t
-		 *
-		 * REMEMBER if DFF == 16-bits
-		 * cmd_code needs to be uint16_t or typecasted to uint16_t
-		 * and number of bytes sent a.k.a 'len' needs to be '2'*/
-		SPI_SendData(SPI2, &cmd_code, 1);
-
-		/*Dummy read to clear RXNE register
-		 * whenever data is sent to a slave device,
-		 * 1-byte is returned to the SPI master
-		 * when it reaches the master, the RXNE bit will be set.
-		 *
-		 * If this is the first send after a reset,
-		 * there is a good chance the slave's RxBuffer
-		 * has some garbage value so,
-		 * to clear the garbage and the RXNE bit,
-		 * a "dummy read" is performed*/
-		SPI_ReceiveData(SPI2, &dummy_read,1);
-
-		/* When the slave receives this command
-		 * it checks if the command is valid
-		 * and then queues up a response in its
-		 * RxBuffer (ACK or NACK), but can't send it
-		 * because the slave can't initiate communication
-		 * therefore dummy bytes are sent to allow the slave
-		 * to send its reply*/
-		SPI_SendData(SPI2, &dummy_write, 1);
-
-		/*Receive response from slave*/
-		SPI_ReceiveData(SPI2, &ack_byte,1);
-
-		/*Determine if the command sent to slave was valid or not
-		 *
-		 * If SPI_Verify_Response (&slave_response) returns '1'
-		 * then the sent command was valid (ACK)
-		 * and we want to enter the if statement
-		 * to send the command arguments*/
-		if (SPI_Verify_Response(&ack_byte))
-		{
-			/*Send command arguments in array
-			 * 'turn the LED pin on the arduino on' */
-			cmd_args[0] = LED_PIN;
-			cmd_args[1] = LED_ON;
-
-			SPI_SendData(SPI2, cmd_args, 2);
-		}
-
-		/* wait here for next button press*/
-		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-
-		/* 8. Send COMMAND_SENSOR_READ:*/
-
-		/* Assign Send COMMAND_SENSOR_READ command code to pTxBuffer */
-		cmd_code = COMMAND_SENSOR_READ;
-
-		/* Send COMMAND_SENSOR_READ over the wire*/
-		SPI_SendData(SPI2, &cmd_code, 1);
-
-		/*Dummy read to clear RXNE register*/
-		SPI_ReceiveData(SPI2, &dummy_read,1);
-
-		/*Send dummy byte to fetch response from slave*/
-		SPI_SendData(SPI2, &dummy_write, 1);
-
-		/*Receive ackbyte from slave*/
-		SPI_ReceiveData(SPI2, &ack_byte,1);
-
-		if (SPI_Verify_Response(&ack_byte))
-		{
-			/*Send COMMAND_SENSOR_READ argument */
-			cmd_args[0] = ANALOG_PIN0;
-
-			/*Send Arguments*/
-			SPI_SendData(SPI2, cmd_args, 1);
-
-			/* Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* Add delay to allow slave to process ADC
-			 * our delay is ~ 200mS, too much but ok*/
-			delay();
-
-			/*Send dummy byte to fetch response from slave*/
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			/* Get sensor value from slave and
-			 * Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &analog_read,1);
-		}
-
-		/*	3. COMMAND_LED_READ			0x52
-			4. COMMAND_PRINT			0x53
-			5. COMMAND_ID_READ			0x54*/
+		Send_Slave_Commands(SPI2, ENABLE);
 
 		/*9. Before disabling the SPI peripheral make sure its not
 		 * transmitting data
@@ -375,11 +456,9 @@ int main(void)
 		 * otherwise it'll disable SPI2 */
 		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
 
-		/*Might cause problems*/
+		/*Might cause problems - not sure how*/
 		SPI_Peripheral_Control(SPI2, DISABLE);
+
+		return 0;
 	}
-
-
-
-	return 0;
 }
