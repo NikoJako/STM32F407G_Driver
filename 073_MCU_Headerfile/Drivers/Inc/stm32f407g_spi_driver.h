@@ -41,15 +41,37 @@
 
  typedef struct
  {
-	 SPI_RegDef_t	*pSPIx; /*This holds the base address of SPIx(x:0,1,2)*/
+	 SPI_RegDef_t	*pSPIx; 			/*This holds the base address of SPIx(x:0,1,2)*/
 	 SPI_Config_t	SPIConfig;
+	 uint8_t		*pTxBuffer;
+	 uint8_t		*pRxBuffer;
+	 uint32_t		TxLen;
+	 uint32_t		RxLen;
+	 uint8_t		TxState;
+	 uint8_t		RxState;
+
  }SPI_Handle_t;
 
 
  /****************************************************************************************
    SPI MACROS*******************************************************************
    ****************************************************************************************/
+
+/* SPI Application States */
+#define SPI_READY					0
+#define SPI_BUSY_IN_RX				1
+#define SPI_BUSY_IN_TX				2
+
+ /* SPI Application Events */
+
+#define SPI_EVENT_TX_CMPLT			1
+#define SPI_EVENT_RX_CMPLT			2
+#define SPI_EVENT_OVR_ERR			3
+#define SPI_EVENT_CRC_ERR			4
+
  /*
+  *
+  *
   * @SPI_DeviceMode - master or slave
   *
   * */
@@ -163,10 +185,14 @@
 
  void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len);
 
+
+ uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len);
+ uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t len);
+
+
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI);
 
  void SPI_IRQPriorityConfig(uint8_t IRQNumber,uint32_t IRQPriority);
-
 
  /*when interrupt occurs main can call this to process the interrupt handler code
   * Input Parameters:
@@ -177,17 +203,16 @@
 
 
  /* Other Peripheral Control APIs*/
-
 void SPI_Peripheral_Control(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
-
 void SPI_SSI_Config(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
-
-/*Configure the SSOE bit
- * slave select output enable
- *
- *
- *
- *
- */
 void SPI_SSOE_Config(SPI_RegDef_t *pSPIx, uint8_t EnOrDi);
+void SPI_Clear_OVR_Flag(SPI_RegDef_t *pSPIx);
+void SPI_Close_SPI_Transmission(SPI_Handle_t *pSPIHandle);
+void SPI_Close_SPI_Reception(SPI_Handle_t *pSPIHandle);
+
+/* Application Callback*/
+void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t App_Event);
+
+
+
 #endif /* INC_STM32F407G_SPI_DRIVER_H_ */

@@ -187,7 +187,7 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
 
 	/* Rx & Tx Buffers*/
-	uint8_t ack_byte, dummy_read, analog_read, cmd_args[2];
+	uint8_t ack_byte, dummy_read, analog_read, led_status, cmd_args[2];
 	uint8_t dummy_write = DUMMY_BYTE;
 	char const *msg_1 = "Hello World";			/* string literal - stored in ROM, never loaded in RAM*/
 	char board_id[16];
@@ -321,10 +321,27 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 			if (SPI_Verify_Response(&ack_byte))
 			{
 				cmd_args[0] = LED_PIN;
-				cmd_args[1] = LED_ON;
 
 				/* Send the LED_READ arguments */
-				SPI_SendData(SPI2, cmd_args, 2);
+				SPI_SendData(SPI2, cmd_args, 1);
+
+				/* Dummy read to clear RXNE register */
+				SPI_ReceiveData(SPI2, &dummy_read,1);
+
+				/* Add delay to allow slave to process
+				 * probably not needed*/
+				delay();
+
+				/*Send dummy byte to fetch response from slave*/
+				SPI_SendData(SPI2, &dummy_write, 1);
+
+				/* Get LED status from slave and
+				 * Dummy read to clear RXNE register */
+				SPI_ReceiveData(SPI2, &led_status, 1);
+
+
+				printf("The LED is %d\n", led_status);
+
 			}
 		}
 		else if (cmd_code[i] == COMMAND_PRINT)

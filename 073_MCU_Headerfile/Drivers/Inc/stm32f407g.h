@@ -9,6 +9,7 @@
 #define INC_STM32F407G_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 
 /************************Start: Processor Specific Details********************************************************************************************
@@ -340,7 +341,7 @@ typedef struct
 #define SPI_CR2_FRF			4
 #define SPI_CR2_ERRIE		5
 #define SPI_CR2_RXNEIE		6
-#define SPI_CR2_TXNEIE		7
+#define SPI_CR2_TXEIE		7
 
 /*SPI_SR*/
 #define SPI_SR_RXNE			0
@@ -504,7 +505,8 @@ typedef struct
 /* MCU1 - 110 - 111
  *  IRQ (Interrupt Request) Number on STM32F407x MCU
  *  Listed in position column on pg 373 in RM
- *  NOTE: Update these macros with valid values according to you MCU
+ *  NOTE: Update these macros with valid values according
+ *  to your MCU
  *  TODO: Complete this list for other peripherals
  *  */
 #define IRQ_NO_EXTI0			6
