@@ -75,32 +75,6 @@
 #define AHB1_PERIPH_BASE					0x40020000U
 #define AHB2_PERIPH_BASE					0x50000000U
 
-//AHB1 Peripherals - GPIO & RCC Registers
-#define GPIOA_BASE_ADDR			(AHB1_PERIPH_BASE + 0x0000)
-#define GPIOB_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0400)
-#define GPIOC_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0800)
-#define GPIOD_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0C00)
-#define GPIOE_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1000)
-#define GPIOF_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1400)
-#define GPIOG_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1800)
-#define GPIOH_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1C00)
-#define GPIOI_BASE_ADDR		(AHB1_PERIPH_BASE + 0x2000)
-
-#define RCC_BASE_ADDR 		(AHB1_PERIPH_BASE + 0x3800)
-
-//APB1 Peripherals
-#define USART_2_BASE_ADDR	(APB1_PERIPH_BASE + 0x4400)
-#define USART_3_BASE_ADDR	(APB1_PERIPH_BASE + 0x4800)
-#define UART_4_BASE_ADDR	(APB1_PERIPH_BASE + 0x4C00)
-#define UART_5_BASE_ADDR	(APB1_PERIPH_BASE + 0x5000)
-
-#define I2C_1_BASE_ADDR		(APB1_PERIPH_BASE + 0x5400)
-#define I2C_2_BASE_ADDR		(APB1_PERIPH_BASE + 0x5800)
-#define I2C_3_BASE_ADDR		(APB1_PERIPH_BASE + 0x5C00)
-
-//APB2 Peripherals - SPI, USART, EXTI & SYSCFG
-#define USART_1_BASE_ADDR	(APB2_PERIPH_BASE + 0x1000)
-#define USART_6_BASE_ADDR	(APB2_PERIPH_BASE + 0x1400)
 
 #define EXTI_BASE_ADDR		(APB2_PERIPH_BASE + 0x3C00)
 #define SYSCFG_BASE_ADDR	(APB2_PERIPH_BASE + 0x3800)
@@ -147,7 +121,9 @@ typedef struct
 }RCC_RegDef_t;
 
 //pointer to struct of type RCC_RegDef_t
-#define RCC		((RCC_RegDef_t*)RCC_BASE_ADDR)
+#define RCC_BASE_ADDR 		(AHB1_PERIPH_BASE + 0x3800)
+
+#define RCC					((RCC_RegDef_t*)RCC_BASE_ADDR)
 
 
 /**************************GPIO register map on page 287 of RM*************************/
@@ -165,7 +141,18 @@ typedef struct
 								//GPIO alternate function high register		Address offset: 0x24--> AFR[1]
 }GPIO_RegDef_t;
 
-//GPIOx base addresses typecasted
+//GPIO Base Address Macros - AHB1 Peripherals
+#define GPIOA_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0000)
+#define GPIOB_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0400)
+#define GPIOC_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0800)
+#define GPIOD_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0C00)
+#define GPIOE_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1000)
+#define GPIOF_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1400)
+#define GPIOG_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1800)
+#define GPIOH_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1C00)
+#define GPIOI_BASE_ADDR		(AHB1_PERIPH_BASE + 0x2000)
+
+//GPIOx Peripheral Definitions
 #define GPIOA				((GPIO_RegDef_t*)GPIOA_BASE_ADDR)
 #define GPIOB				((GPIO_RegDef_t*)GPIOB_BASE_ADDR)
 #define GPIOC				((GPIO_RegDef_t*)GPIOC_BASE_ADDR)
@@ -222,7 +209,15 @@ typedef struct
 									(x == GPIOH) ? 7 : \
 									(x == GPIOI) ? 8 : 0 )
 
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
 /**************************EXTI register map on page 287 of RM*************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
 typedef struct
 {
 	volatile uint32_t EXTI_IMR;		//Interrupt mask register 				Address offset: 0x00
@@ -237,7 +232,15 @@ typedef struct
 //pointer to struct of type EXTI_RegDef_t
 #define EXTI 				((EXTI_RegDef_t*)EXTI_BASE_ADDR)
 
-/**************************SYSCFG register map on page 294 of RM*************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/**************************SYSCFG register map on page 294 of RM**********************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
 typedef struct
 {
 	volatile uint32_t SYSCFG_MEMRMP;	//SYSCFG memory remap register									Address offset: 0x00
@@ -501,6 +504,69 @@ typedef struct
 #define DUTY			14
 #define FS				15
 
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/**************************USARTx register map on page 1018 of RM*************************/
+/***********************Reset Value = 0 unless otherwise stated***********************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+
+typedef struct
+{
+	volatile uint32_t USART_SR; 			//USART Status Register					Address Offset: 0x00	Reset Value: 0x0000 00C0
+	volatile uint32_t USART_DR; 			//USART Data Register					Address Offset: 0x04
+	volatile uint32_t USART_BRR; 			//USART Baud Rate Register				Address Offset: 0x08
+	volatile uint32_t USART_CR1; 			//USART Control Register 1				Address Offset: 0x0C
+	volatile uint32_t USART_CR2; 			//USART Control Register 2				Address Offset: 0x10
+	volatile uint32_t USART_CR3; 			//USART Control Register 3				Address Offset: 0x14
+	volatile uint32_t USART_GTPR; 			//USART Guard Time & Prescaler Register	Address Offset: 0x18
+
+}USART_RegDef_t;
+
+//USART & UART Peripheral Base Addresses
+//APB1 Peripherals - USART
+#define USART_2_BASE_ADDR	(APB1_PERIPH_BASE + 0x4400)
+#define USART_3_BASE_ADDR	(APB1_PERIPH_BASE + 0x4800)
+#define UART_4_BASE_ADDR	(APB1_PERIPH_BASE + 0x4C00)
+#define UART_5_BASE_ADDR	(APB1_PERIPH_BASE + 0x5000)
+#define UART_7_BASE_ADDR	(APB1_PERIPH_BASE + 0x7800)
+#define UART_8_BASE_ADDR	(APB1_PERIPH_BASE + 0x7C00)
+
+//APB2 Peripherals - USART
+#define USART_1_BASE_ADDR	(APB2_PERIPH_BASE + 0x1000)
+#define USART_6_BASE_ADDR	(APB2_PERIPH_BASE + 0x1400)
+
+/*Peripheral/Device Definitions
+ *Pointer to USART & UART Base Addresses */
+#define USART_1 	(USART_RegDef_t*)USART_1_BASE_ADDR
+#define USART_2 	(USART_RegDef_t*)USART_2_BASE_ADDR
+#define USART_3 	(USART_RegDef_t*)USART_3_BASE_ADDR
+#define UART_4 		(USART_RegDef_t*)UART_4_BASE_ADDR
+#define UART_5 		(USART_RegDef_t*)UART_5_BASE_ADDR
+#define USART_6 	(USART_RegDef_t*)USART_6_BASE_ADDR
+#define UART_7  	(USART_RegDef_t*)UART_7_BASE_ADDR
+#define UART_8  	(USART_RegDef_t*)UART_8_BASE_ADDR
+
+//Clock Enable Macros for USARTx Peripherals
+#define USART_2_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 17))
+#define USART_3_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 18))
+#define UART_4_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 19))
+#define UART_5_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 20))
+#define USART_1_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 4))
+#define USART_6_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 5))
+
+//Clock Disable Macros for USARTx Peripherals
+#define USART_2_PCLK_DI()	(RCC->RCC_APB1ENR &= ~(1 << 17))
+#define USART_3_PCLK_DI()	(RCC->RCC_APB1ENR &= ~(1 << 18))
+#define UART_4_PCLK_DI()	(RCC->RCC_APB1ENR &= ~(1 << 19))
+#define UART_5_PCLK_DI()	(RCC->RCC_APB1ENR &= ~(1 << 20))
+#define USART_1_PCLK_DI()	(RCC->RCC_APB2ENR &= ~(1 << 4))
+#define USART_6_PCLK_DI()	(RCC->RCC_APB2ENR &= ~(1 << 5))
+
 /*Peripheral Interrupt Requests*/
 /* MCU1 - 110 - 111
  *  IRQ (Interrupt Request) Number on STM32F407x MCU
@@ -544,13 +610,7 @@ typedef struct
 #define NVIC_IRQ_PRIO14		14
 #define NVIC_IRQ_PRIO15		15
 
-//Clock Enable Macros for USARTx Peripherals
-#define USART_2_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 17))
-#define USART_3_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 18))
-#define UART_4_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 19))
-#define UART_5_PCLK_EN()	(RCC->RCC_APB1ENR |= (1 << 20))
-#define USART_1_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 4))
-#define USART_6_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 5))
+
 
 #define EXTI_PCLK_EN()		(EXTI->RCC_APB1ENR |= (1 << 14))
 #define SYSCFG_PCLK_EN()	(RCC->RCC_APB2ENR |= (1 << 14))
