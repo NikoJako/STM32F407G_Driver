@@ -318,6 +318,12 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		 }
 	 }
  }
+
+ /*when interrupt occurs main can call this to process the interrupt handler code
+   * Input Parameters:
+   	 *
+   *Return value:
+   	 *None */
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI)
  {
 	 if(ENorDI == ENABLE)
@@ -443,6 +449,18 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
  }
 
+ /* This API doesn't send any data, only saves pTxBuffer
+  *  and Len to global variables. Also enables the
+  *  TXEIE bit so that an interrupt is triggered whenever
+  *  the TXE flag is set in the SPIx_SR
+  *
+  * Input Parameters:
+   	 * SPI_Handle_t *pSPIHandle
+   	 * uint8_t *pTxBuffer
+   	 * uint32_t len
+   	 *
+   *Return value:
+   * the current state value */
  uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len)
  {
 	 uint8_t curr_state = pSPIHandle->TxState;
@@ -492,8 +510,8 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		  * transmission is over*/
 		 pSPIHandle->RxState = SPI_BUSY_IN_RX;
 
-		 /* 3. Enable the TXEIE control bit to get interrupt whenever
-		  * TXE flag is SET in SR */
+		 /* 3. Enable the RXNEIE control bit to get interrupt whenever
+		  * RXNE flag is SET in SR */
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_RXNEIE);
 
 		 /* 4. Data transmission will be handled by the ISR code
@@ -503,9 +521,11 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 return curr_state;
  }
 
-  /*when interrupt occurs main can call this to process the interrupt handler code
+  /* when the interrupt is triggered, main calls this to figure out what event
+   * caused an interrupt to trigger and what caused it to trigger
+   *
    * Input Parameters:
-   	 *
+   	 * SPI handle
    *Return value:
    	 *None */
  void SPI_IRQHandling(SPI_Handle_t *pSPIHandle)
@@ -526,7 +546,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
 	 if(temp1 && temp2)
 	 {
-		 /* handle TXE */
+		 /* handle TXE  - helper function */
 		 spi_txe_interrupt_handle(pSPIHandle);
 	 }
 
@@ -536,8 +556,8 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
 	 if(temp1 && temp2)
 	 {
-	 		 /* handle RXNE */
-	 		 spi_rxne_interrupt_handle(pSPIHandle);
+		 /* handle RXNE */
+		 spi_rxne_interrupt_handle(pSPIHandle);
 	 }
 
 	 /* check the OVR flag */
@@ -696,6 +716,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 temp = pSPIx->SPI_DR;
 	 temp = pSPIx->SPI_SR;
 
+
  }
 
 
@@ -736,8 +757,15 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
  }
 
- void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t App_Event)
+ /*  we implemented this function as a place holder expecting the application writers to implement they're own function to over ride this one
+	iii. if they don't, this will raise a compiler error
+	iv. to prevent the compiler error, we use the GCC '_attribute_'((weak)) keyword before the function name to make this function a 'weak' function
+	v. with the __attribute__((weak)) GCC attribute, this weak function will be called if the application writers forget to override it with a function of
+	their own
+  *  */
+ __attribute__((weak)) void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t App_Event)
  {
-	 /* Weak implementation, application may over-write this function*/
+	 /* Weak implementation, with hopes that the application may
+	  * over-write this function*/
  }
 
