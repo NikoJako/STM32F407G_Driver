@@ -150,8 +150,8 @@ void GPIO_ButtonInit()
 	 as INPUT PIN
 	 GPIO_PinSpeed & GPIO_PinOPType are used when pin is
 	 set to OUTPUT mode only*/
-	GPIO_btn.pGPIOx = GPIOA;										//point the handle at GPIO port A
-	GPIO_btn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_0;
+	GPIO_btn.pGPIOx = GPIOD;										//point the handle at GPIO port D
+	GPIO_btn.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;			//point the handle at pin 6
 	GPIO_btn.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_INPUT;
 	GPIO_btn.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
 
@@ -412,9 +412,36 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 
 int main(void)
 {
-	/* Configure and enable a GPIOD port to handle the button press
- * data is to be sent only when the button is pressed*/
-	GPIO_ButtonInit();
+	/*Create GPIOD Handle for interrupt pin*/
+	GPIO_Handle_t GPIO_PD6_interrupt;
+
+	/* PD6 will be used to receive an alert signal (high to low pulse)
+	 * from the arduino when it has received new data from its
+	 * serial terminal. In turn, PD6 triggers an interrupt
+	 *
+	 * Set !APPLICABLE! GPIO_PinConfig members to achieve this:
+	 * uint8_t GPIO_PinNumber;
+	 * uint8_t GPIO_PinMode;
+	 * uint8_t GPIO_PinSpeed;
+	 * uint8_t GPIO_PinPuPdControl;
+	 * uint8_t GPIO_PinOPType;
+	 * uint8_t GPIO_PinAltFuncMode;
+	 *
+	 * Set !APPLICABLE! GPIO_PinConfig members to achieve this:
+	 * INPUT PIN
+	 * GPIO_PinSpeed
+	 * GPIO_PinOPType are used when pin is
+	 set to OUTPUT mode only*/
+	GPIO_PD6_interrupt.pGPIOx = GPIOD;										//point the handle at GPIO port D
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_INPUT;
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+
+	/* To apply the above settings call
+	 * GPIO_Init(GPIO_Handle_t *pGPIOHandle)
+	 * in stm32f407g_gpio_driver.c and send address of
+	 * GPIO_Handle GPIO_PD6_interrupt*/
+	GPIO_Init(&GPIO_PD6_interrupt);
 
 /* 1. Select what SPIx peripheral you want to use
  *

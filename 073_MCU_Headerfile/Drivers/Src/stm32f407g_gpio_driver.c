@@ -120,9 +120,7 @@ void GPIO_PeriClkControl(GPIO_RegDef_t *pGPIOx, uint8_t ENorDI)
 */
 void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 {
-
-
-	/* Enable the clock for the GPIOB peripheral*/
+	/* Enable the clock for the GPIOD peripheral*/
 	GPIO_PeriClkControl(pGPIOHandle->pGPIOx, ENABLE);
 
 	uint32_t temp = 0;			//temp register

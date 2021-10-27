@@ -138,7 +138,7 @@ void SPI2_Init()
 void GPIO_ButtonInit()
 {
 
-	printf("In GPIO_Init()");
+	printf("In GPIO_ButtonInit()");
 	/* create GPIO port handle to interface with button
 	 GPIO_Handle_t
 	 	 GPIO_RegDef_t *pGPIOx
