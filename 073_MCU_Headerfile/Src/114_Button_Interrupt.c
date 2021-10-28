@@ -64,7 +64,7 @@ int main(void){
 
 
 
-	//******************GPIOD*****************************************//
+	//******************GPIOD - Button Pin - *****************************************//
 
 	/* Configure the GPIOD for the BUTTON to be connected to PD5
 	 * set !APPLICABLE! GPIO_PinConfig members appropriately

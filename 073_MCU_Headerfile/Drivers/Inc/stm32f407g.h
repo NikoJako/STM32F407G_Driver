@@ -12,37 +12,6 @@
 #include <stddef.h>
 
 
-/************************Start: Processor Specific Details********************************************************************************************
- *
- * ARM Cortex M4 Processor NVIC Interrupt Set-Enable Register X (ISERx) Register Addresses
- * all should be volatile unsigned 32-bit integer pointers to corresponding memory addresses
- *
- * Section 4.2.2 (page 4-2) in the Cortex M4 Generic User Guide
- * */
-#define NVIC_ISER0							((volatile uint32_t *)0xE000E100)
-#define NVIC_ISER1							((volatile uint32_t *)0xE000E104)
-#define NVIC_ISER2							((volatile uint32_t *)0xE000E108)
-#define NVIC_ISER3							((volatile uint32_t *)0xE000E11C)
-
-/*
- * Interrupt Clear Enable Registers (ICERx)
- * Section 4.2.3 (page 4-3) Cortex M4 Generic User Guide
- *
- * */
-#define NVIC_ICER0							((volatile uint32_t *)0xE000E180)
-#define NVIC_ICER1							((volatile uint32_t *)0xE000E184)
-#define NVIC_ICER2							((volatile uint32_t *)0xE000E188)
-#define NVIC_ICER3							((volatile uint32_t *)0xE000E18C)
-
-/*
- * Interrupt Priority Registers (NVIC_IPR0-IPR59)
- * Section 4.2.7 (page 4-7) Cortex M4 Generic User Guide
- *
- * */
-#define NVIC_IPR_BASE_ADDR  			    ((volatile uint32_t *)0xE000E400)
-
-#define NO_PR_BITS_IMPLEMENTED				4
-
 
 
 //Generic Macros
@@ -567,6 +536,44 @@ typedef struct
 #define USART_1_PCLK_DI()	(RCC->RCC_APB2ENR &= ~(1 << 4))
 #define USART_6_PCLK_DI()	(RCC->RCC_APB2ENR &= ~(1 << 5))
 
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/************************ARM Cortex M4 Processor: Processor Specific Details****************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/*************************************************************************************/
+/**************************************************************************************
+ * ARM Cortex M4 Processor NVIC Interrupt Set-Enable Register X (ISERx) Register Addresses
+ * all should be volatile unsigned 32-bit integer pointers to corresponding memory addresses
+ *
+ * Section 4.2.2 (page 4-2) in the Cortex M4 Generic User Guide
+ * */
+#define NVIC_ISER0							((volatile uint32_t *)0xE000E100)
+#define NVIC_ISER1							((volatile uint32_t *)0xE000E104)
+#define NVIC_ISER2							((volatile uint32_t *)0xE000E108)
+#define NVIC_ISER3							((volatile uint32_t *)0xE000E11C)
+
+/*
+ * Interrupt Clear Enable Registers (ICERx)
+ * Section 4.2.3 (page 4-3) Cortex M4 Generic User Guide
+ *
+ * */
+#define NVIC_ICER0							((volatile uint32_t *)0xE000E180)
+#define NVIC_ICER1							((volatile uint32_t *)0xE000E184)
+#define NVIC_ICER2							((volatile uint32_t *)0xE000E188)
+#define NVIC_ICER3							((volatile uint32_t *)0xE000E18C)
+
+/*
+ * Interrupt Priority Registers (NVIC_IPR0-IPR59)
+ * Section 4.2.7 (page 4-7) Cortex M4 Generic User Guide
+ *
+ * */
+#define NVIC_IPR_BASE_ADDR  			    ((volatile uint32_t *)0xE000E400)
+
+#define NO_PR_BITS_IMPLEMENTED				4
+
 /*Peripheral Interrupt Requests*/
 /* MCU1 - 110 - 111
  *  IRQ (Interrupt Request) Number on STM32F407x MCU
@@ -609,7 +616,6 @@ typedef struct
 #define NVIC_IRQ_PRIO13		13
 #define NVIC_IRQ_PRIO14		14
 #define NVIC_IRQ_PRIO15		15
-
 
 
 #define EXTI_PCLK_EN()		(EXTI->RCC_APB1ENR |= (1 << 14))

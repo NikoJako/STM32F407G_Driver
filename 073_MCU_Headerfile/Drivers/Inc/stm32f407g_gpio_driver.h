@@ -62,9 +62,10 @@ typedef struct
 #define GPIO_MODE_OUTPUT		1
 #define GPIO_MODE_ALT_FUNC		2
 #define GPIO_MODE_ANALOG		3
-#define GPIO_MODE_IN_FED		4		//input mode with falling edge detection
-#define GPIO_MODE_IN_RED		5		//input mode with rising edge detection
-#define GPIO_MODE_IN_RFED		6		//input mode with rising edge falling edge detection
+
+#define GPIO_MODE_IN_FED		4		//interrupt mode with falling edge detection
+#define GPIO_MODE_IN_RED		5		//interrupt mode with rising edge detection
+#define GPIO_MODE_IN_RFED		6		//interrupt mode with rising edge falling edge detection
 
 /*
  * @GPIO_PinOPType

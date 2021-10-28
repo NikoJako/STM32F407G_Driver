@@ -201,218 +201,15 @@ void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
 
 	}
 
-	for(uint8_t i = 0; i < 5; ++i)
-	{
-		if(cmd_code[i] == COMMAND_LED_CTRL)
-		{
-			printf("COMMAND_LED_CTRL\n");
+	/* Hang here until next button press*/
+	while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
 
-			/* 7. Send COMMAND_LED_CTRL  <pin number> <value>
-			 *
-			 * void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
-			 * remember that pTxBuffer == uint8_t
-			 *
-			 * REMEMBER if DFF == 16-bits
-			 * cmd_code needs to be uint16_t or typecasted to uint16_t
-			 * and number of bytes sent a.k.a 'len' needs to be '2'*/
-			SPI_SendData(SPI2, &cmd_code[i], 1);
-
-				/*Dummy read to clear RXNE register
-			 * whenever data is sent to a slave device,
-			 * 1-byte is returned to the SPI master
-			 * when it reaches the master, the RXNE bit will be set.
-			 *
-			 * If this is the first send after a reset,
-			 * there is a good chance the slave's RxBuffer
-			 * has some garbage value so,
-			 * to clear the garbage and the RXNE bit,
-			 * a "dummy read" is performed*/
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* When the slave receives this command
-			 * it checks if the command is valid
-			 * and then queues up a response in its
-			 * RxBuffer (ACK or NACK), but can't send it
-			 * because the slave can't initiate communication
-			 * therefore dummy bytes are sent to allow the slave
-			 * to send its reply*/
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			/*Receive response from slave*/
-			SPI_ReceiveData(SPI2, &ack_byte,1);
-
-			/*Determine if the command sent to slave was valid or not
-			 *
-			 * If SPI_Verify_Response (&slave_response) returns '1'
-			 * then the sent command was valid (ACK)
-			 * and we want to enter the if statement
-			 * to send the command arguments*/
-			if (SPI_Verify_Response(&ack_byte))
-			{
-				/*Send command arguments in array
-				 * 'turn the LED pin on the arduino on' */
-				cmd_args[0] = LED_PIN;
-				cmd_args[1] = LED_ON;
-
-				SPI_SendData(SPI2, cmd_args, 2);
-			}
-		}
-		else if (cmd_code[i] == COMMAND_SENSOR_READ)
-		{
-			printf("COMMAND_SENSOR_READ\n");
-
-			/* Sending the COMMAND_SENSOR_READ command, while receiving
-			 * garbage value in the shift register of the Uno */
-			SPI_SendData(SPI2, &cmd_code[i], 1);
-
-			/* Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* Dummy write to get ACK or NACK from
-			 * slave regarding the command sent */
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			/* Read the slave response and process */
-			SPI_ReceiveData(SPI2, &ack_byte,1);
-
-			if (SPI_Verify_Response(&ack_byte))
-			{
-				/*Send COMMAND_SENSOR_READ argument */
-				cmd_args[0] = ANALOG_PIN0;
-
-				/*Send Arguments*/
-				SPI_SendData(SPI2, cmd_args, 1);
-
-				/* Dummy read to clear RXNE register */
-				SPI_ReceiveData(SPI2, &dummy_read,1);
-
-				/* Add delay to allow slave to process ADC
-				 * our delay is ~ 200mS, too much but ok*/
-				delay();
-
-				/*Send dummy byte to fetch response from slave*/
-				SPI_SendData(SPI2, &dummy_write, 1);
-
-				/* Get sensor value from slave and
-				 * Dummy read to clear RXNE register */
-				SPI_ReceiveData(SPI2, &analog_read,1);
-
-				printf("Sensor value is %d\n", analog_read);
-			}
-		}
-		else if (cmd_code[i] == COMMAND_LED_READ)
-		{
-			printf("COMMAND_LED_READ\n");
-
-			/*Send COMMAND_LED_READ command, while simultaneously
-			 * receiving garbage value in the shift register
-			 * of the Uno  */
-			SPI_SendData(SPI2, &cmd_code[i], 1);
-
-			/* Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* Dummy write to get ACK or NACK from
-			 * slave regarding the command sent */
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			SPI_ReceiveData(SPI2, &ack_byte,1);
-
-			if (SPI_Verify_Response(&ack_byte))
-			{
-				cmd_args[0] = LED_PIN;
-
-				/* Send the LED_READ arguments */
-				SPI_SendData(SPI2, cmd_args, 1);
-
-				/* Dummy read to clear RXNE register */
-				SPI_ReceiveData(SPI2, &dummy_read,1);
-
-				/* Add delay to allow slave to process
-				 * probably not needed*/
-				delay();
-
-				/*Send dummy byte to fetch response from slave*/
-				SPI_SendData(SPI2, &dummy_write, 1);
-
-				/* Get LED status from slave and
-				 * Dummy read to clear RXNE register */
-				SPI_ReceiveData(SPI2, &led_status, 1);
-
-
-				printf("The LED is %d\n", led_status);
-
-			}
-		}
-		else if (cmd_code[i] == COMMAND_PRINT)
-		{
-			printf("COMMAND_PRINT\n");
-
-			/* Sending the COMMAND_PRINT command, while receiving
-			 * garbage value in the shift register of the Uno */
-			SPI_SendData(SPI2, &cmd_code[i], 1);
-
-			/* Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* Dummy write to get ACK or NACK from
-			 * slave regarding the command sent */
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			/* Read the slave response and process */
-			SPI_ReceiveData(SPI2, &ack_byte,1);
-
-			if (SPI_Verify_Response(&ack_byte))
-			{
-				/* Length of message */
-				cmd_args[0] = MSG_1_SIZE;
-
-				/* Message
-				 * See Section 43, Lecture 160 for additional info
-				 * about (uintptr_t)*/
-				cmd_args[1] = (uint8_t)(uintptr_t)msg_1;
-
-				/* Send the COMMAND_PRINT arguments */
-				SPI_SendData(SPI2, cmd_args, 2);
-
-				/* Slave is to display the message and return
-				 * nothing to the master */
-			}
-
-		}
-		else if (cmd_code[i] == COMMAND_ID_READ)
-		{
-			printf("COMMAND_ID_READ\n");
-
-			/* Sending the COMMAND_ID_READ command, while receiving
-			 * garbage value in the shift register of the Uno */
-			SPI_SendData(SPI2, &cmd_code[i], 1);
-
-			/* Dummy read to clear RXNE register */
-			SPI_ReceiveData(SPI2, &dummy_read,1);
-
-			/* Dummy write to get ACK or NACK from
-			 * slave regarding the command sent */
-			SPI_SendData(SPI2, &dummy_write, 1);
-
-			/* Read the slave response and process */
-			SPI_ReceiveData(SPI2, &ack_byte,1);
-
-			/* Slave only returns a 10-byte
-			 * board-ID string  */
-
-			printf("Board-ID string : %c\n", board_id);
-		}
-
-		/* Hang here until next button press*/
-		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-	}
 
 }
 
 int main(void)
 {
-	/*Create GPIOD Handle for interrupt pin*/
+	/*Create GPIOD Handle for interrupt pin PD6*/
 	GPIO_Handle_t GPIO_PD6_interrupt;
 
 	/* PD6 will be used to receive an alert signal (high to low pulse)
@@ -425,23 +222,23 @@ int main(void)
 	 * uint8_t GPIO_PinSpeed;
 	 * uint8_t GPIO_PinPuPdControl;
 	 * uint8_t GPIO_PinOPType;
-	 * uint8_t GPIO_PinAltFuncMode;
-	 *
-	 * Set !APPLICABLE! GPIO_PinConfig members to achieve this:
-	 * INPUT PIN
-	 * GPIO_PinSpeed
-	 * GPIO_PinOPType are used when pin is
-	 set to OUTPUT mode only*/
+	 * uint8_t GPIO_PinAltFuncMode;*/
+
+	/*TODO: why does PD6 need to configured this way? */
 	GPIO_PD6_interrupt.pGPIOx = GPIOD;										//point the handle at GPIO port D
 	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_INPUT;
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_NO_PUPD;
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_IN_FED;
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PU;
 
 	/* To apply the above settings call
 	 * GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	 * in stm32f407g_gpio_driver.c and send address of
 	 * GPIO_Handle GPIO_PD6_interrupt*/
 	GPIO_Init(&GPIO_PD6_interrupt);
+
+	/* 5. */
+	GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
 
 /* 1. Select what SPIx peripheral you want to use
  *
@@ -470,26 +267,7 @@ int main(void)
 
 	while(1)
 	{
-		/* We want the program to hang here until is the button is pressed.
-		 * When pressed the while expression computes to 0 and the program
-		 * jumps over the while loop and sends the data
-		 *
-		 * GPIO_ReadFromInputPin will return:
-		 * 	1 if the button has been pressed
-		 * 	0 if not
-		 * */
-		while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-
-		/* Add 200mS delay for switch debouncing */
-		delay();
-
-		/* @To-Do create function to:
-		 * Send command
-		 * Dummy Read to clear RXNE register
-		 * Send dummy byte to fetch response from slave
-		 * Receive Response from slave
-		 * Verify Response from slave*/
-		Send_Slave_Commands(SPI2, ENABLE);
+		/* Wait here for the high-to-low signal from the arduino*/
 
 		/*9. Before disabling the SPI peripheral make sure its not
 		 * transmitting data

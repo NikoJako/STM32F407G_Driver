@@ -123,7 +123,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	/* Enable the clock for the GPIOD peripheral*/
 	GPIO_PeriClkControl(pGPIOHandle->pGPIOx, ENABLE);
 
-	uint32_t temp = 0;			//temp register
+	uint32_t temp = 0;							//temp register
 
 		/*#define GPIO_MODE_INPUT		0		// When in input mode, pin can deliver interrupt
 		#define GPIO_MODE_OUTPUT		1
@@ -157,7 +157,10 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	else
 	{
 		/* These modes are interruptible therefore
-		 * we must configure
+		 * we must configure the edge detection
+		 *
+		 * FED - falling edge detection
+		 * RED - rising edge detection
 		 * FTSR - falling trigger selection register
 		 * RTSR - rising trigger selection register
 		 * */
@@ -168,7 +171,8 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 			//configure the FTSR pg 385 in RM
 			EXTI->EXTI_FTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 
-			//clear the corresponding bit in the RTSR (do as a safe measure)
+			//clear the corresponding bit in the RTSR (rising trigger selection register)
+			//(do as a safe measure)
 			EXTI->EXTI_RTSR &= ~(1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 		}
 		else if(pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_IN_RED)
