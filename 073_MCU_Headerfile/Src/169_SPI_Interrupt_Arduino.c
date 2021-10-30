@@ -293,3 +293,8 @@ void EXTI9_5_IRQHandler(void)
 {
 	GPIO_IRQHandling(GPIO_PIN_NO_6);
 }
+
+void SPI2_IRQHandler(void)
+{
+	SPI_IRQHandling(&SPI2_Handle);
+}
