@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include "stm32f407g.h"
 #include "stm32f407g_gpio_driver.h"
+#include "stm32f407g_spi_driver.h"
 
 
 /*Peripheral Clock Setup - enable/disable peripheral clk for a given GPIO base address
@@ -192,21 +193,32 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 			// configure the bit in the FTSR
 			EXTI->EXTI_FTSR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
 		}
+	}
 
-		//2. Configure the GPIO port selection in SYSCFG_EXTICR
+		/*2. Assign the GPIO pin to the appropriate EXTI line
+		 * using SYSCFG_EXTICR[4]:
+		 *
+		 * temp1 is the index of SYSCFG_EXTICR[4] that is needs to be
+		 * configured. Based on the pin number this tells you what
+		 * SYSCFG_EXTICRx register needs to be configured
+		 *
+		 * temp2 is the 4 bits within the above selected
+		 * SYSCFG_EXTICR[temp1] register that needs to be set */
 		uint8_t temp1 = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 4;
 		uint8_t temp2 = pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 4;
 
+		/*TODO - Write an explanation for this*/
 		uint8_t portcode = GPIO_BASE_ADDR_TO_CODE(pGPIOHandle->pGPIOx);
 
-		// configure clock for SYSCFG
+		/* Enable the SYSCFG clock */
 		SYSCFG_PCLK_EN();
+
+		/*Configure the appropriate SYSCFG_EXTICR register for
+		 * given pin number*/
 		SYSCFG->SYSCFG_EXTICR[temp1] = portcode << (temp2 * 4);
 
-		//3. Enable the EXTI interrupt delivery using IMR
+		//3. Enable the EXTI interrupt delivery using the interrupt mask register (IMR)
 		EXTI->EXTI_IMR |= (1 << pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber);
-	}
-
 
 		//2. OSPEEDR - Speed
 	 temp = (pGPIOHandle->GPIO_PinConfig.GPIO_PinSpeed << (2 * pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber));
@@ -433,6 +445,7 @@ void GPIO_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI)
 			//program ISER2 register
 			*NVIC_ISER2 |= (1 << (IRQNumber % 32));
 		}
+	}
 	else //Disable therefore Interrupt Clear Enable Register
 	{
 		if (IRQNumber <= 31)
@@ -464,7 +477,6 @@ void GPIO_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI)
 			*NVIC_ICER2 |= (1 << (IRQNumber % 32));
 		}
 
-	}
 	}
 
 }
@@ -500,5 +512,11 @@ void GPIO_IRQHandling(uint8_t PinNumber)
 		//clear - in the Cortex Generic UG, writing a 1 to the PR clears it
 		EXTI->EXTI_PR |= (1 << PinNumber);
 	}
+
+	uint8_t inc_msg;
+	uint32_t msg_len = 500;
+
+	SPI_ReceiveData(SPI2, &inc_msg, msg_len);
+
 }
 

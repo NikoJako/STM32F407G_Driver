@@ -237,8 +237,11 @@ int main(void)
 	 * GPIO_Handle GPIO_PD6_interrupt*/
 	GPIO_Init(&GPIO_PD6_interrupt);
 
-	/* 5. */
+	/* 5. Configure the NVIC registers */
 	GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
+
+	/* 6. Set interrupt priority */
+	GPIO_IRQPriorityConfig(IRQ_NO_EXTI5_9, NVIC_IRQ_PRIO15);
 
 /* 1. Select what SPIx peripheral you want to use
  *
@@ -268,6 +271,7 @@ int main(void)
 	while(1)
 	{
 		/* Wait here for the high-to-low signal from the arduino*/
+		while(1);
 
 		/*9. Before disabling the SPI peripheral make sure its not
 		 * transmitting data
@@ -282,4 +286,10 @@ int main(void)
 
 		return 0;
 	}
+}
+
+/*Interrupt Handler that calls the IRQ_Handler APIb*/
+void EXTI9_5_IRQHandler(void)
+{
+	GPIO_IRQHandling(GPIO_PIN_NO_6);
 }
