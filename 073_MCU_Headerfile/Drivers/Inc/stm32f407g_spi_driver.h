@@ -63,7 +63,6 @@
 #define SPI_BUSY_IN_TX				2
 
  /* SPI Application Events */
-
 #define SPI_EVENT_TX_CMPLT			1
 #define SPI_EVENT_RX_CMPLT			2
 #define SPI_EVENT_OVR_ERR			3
@@ -199,7 +198,7 @@
   	 *
   *Return value:
   	 *None */
- void SPI_IRQHandling(SPI_Handle_t *pHandle);
+ void SPI_IRQHandling(SPI_Handle_t *pSPIHandle);
 
 
  /* Other Peripheral Control APIs*/

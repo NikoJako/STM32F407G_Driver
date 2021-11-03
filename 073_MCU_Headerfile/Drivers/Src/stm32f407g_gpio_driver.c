@@ -263,8 +263,6 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	 pGPIOHandle->pGPIOx->PUPDR |= temp;
 	 temp = 0;
 
-
-
 	 //5. configure the alt functionality, for this to mean anything, PinMode must be set to AltFunc mode
 	 /* temp1 calculation determines what alt function register (High|Low) needs to be configured
 	  * temp2 determines the starting bit index in the alt function register, that the GPIO_PinConfig.GPIO_PinAltFuncMode

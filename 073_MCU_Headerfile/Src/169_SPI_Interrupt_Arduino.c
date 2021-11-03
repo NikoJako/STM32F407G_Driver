@@ -12,33 +12,6 @@
 #include "stm32f407g_spi_driver.h"
 #include "stm32f407g_gpio_driver.h"
 
-/* LED States */
-#define LED_OFF					0
-#define LED_ON					1
-
-/* Command Codes - each 1-byte of data*/
-#define COMMAND_LED_CTRL		0x50
-#define COMMAND_SENSOR_READ		0x51
-#define COMMAND_LED_READ		0x52
-#define COMMAND_PRINT			0x53
-#define COMMAND_ID_READ			0x54
-
-/*SPI Command Responses
- * 'ACK' conflicts with an I2C_CR1
- * bit position definition in
- * stm32f407g.h (line 426)*/
-#define NACK 					0xA5		// 165 in decimal
-#define ACKN					0xF5		// 245 in decimal
-
-/*Arduino Analog Pins*/
-#define ANALOG_PIN0				0
-#define ANALOG_PIN1				1
-#define ANALOG_PIN2				2
-#define ANALOG_PIN3				3
-#define ANALOG_PIN4				4
-
-/*Arduino LED */
-#define LED_PIN					9
 
 /*Dummy byte to receive ACK or NACK from slave*/
 #define DUMMY_BYTE				0xFF
@@ -160,126 +133,84 @@ void GPIO_ButtonInit()
 	GPIO_Init(&GPIO_btn);
 }
 
-uint8_t SPI_Verify_Response(uint8_t *ack_byte)
+void Slave_GPIO_InterruptPin_Init()
 {
-	if (*ack_byte == ACKN)
-	{
-		/*Valid command*/
-		return 1;
-	}
-	else
-	{
-		/*Invalid Command*/
-		return 0;
-	}
+	/*Create GPIOD Handle for interrupt pin PD6*/
+		GPIO_Handle_t GPIO_PD6_interrupt;
+
+		/* PD6 will be used to receive an alert signal (high to low pulse)
+		 * from the arduino when it has received new data from its
+		 * serial terminal. In turn, PD6 triggers an interrupt
+		 *
+		 * Set !APPLICABLE! GPIO_PinConfig members to achieve this:
+		 * uint8_t GPIO_PinNumber;
+		 * uint8_t GPIO_PinMode;
+		 * uint8_t GPIO_PinSpeed;
+		 * uint8_t GPIO_PinPuPdControl;
+		 * uint8_t GPIO_PinOPType;
+		 * uint8_t GPIO_PinAltFuncMode;*/
+
+		/*TODO: why does PD6 need to configured this way? */
+		GPIO_PD6_interrupt.pGPIOx = GPIOD;										//point the handle at GPIO port D
+		GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
+		GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_IN_FED;
+		GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
+		GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PU;
+
+		/* To apply the above settings call
+		 * GPIO_Init(GPIO_Handle_t *pGPIOHandle)
+		 * in stm32f407g_gpio_driver.c and send address of
+		 * GPIO_Handle GPIO_PD6_interrupt*/
+		GPIO_Init(&GPIO_PD6_interrupt);
+
+		/* Configure the NVIC registers */
+		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
+
+		/* Set interrupt priority */
+		GPIO_IRQPriorityConfig(IRQ_NO_EXTI5_9, NVIC_IRQ_PRIO15);
 }
 
-void Send_Slave_Commands(SPI_RegDef_t *pSPIx, uint8_t EnOrDi)
-{
-	/*used to keep track of what command to send next
-	can't be destroyed when function is done*/
-	//uint8_t const cmd_count = 0;
-
-	/* case 3 modifiable data and constant pointer
-	use this to update the value of cmd_count*/
-	//uint8_t *ptr_cmd_count = (uint8_t*)&cmd_count
-
-	uint8_t cmd_code[5] = {COMMAND_LED_CTRL, COMMAND_SENSOR_READ, COMMAND_LED_READ, COMMAND_PRINT, COMMAND_ID_READ};
-
-	/* Rx & Tx Buffers*/
-	uint8_t ack_byte, dummy_read, analog_read, led_status, cmd_args[2];
-	uint8_t dummy_write = DUMMY_BYTE;
-	char const *msg_1 = "Hello World";			/* string literal - stored in ROM, never loaded in RAM*/
-	char board_id[16];
-
-
-	/*	1. if SPIx is disabled...*/
-	if(SPI_GetFlag_Status(pSPIx, SPI_SPE_FLAG) == RESET)
-	{
-		/* 5. ENABLE the SPIx peripheral SPE bit in the CR*/
-		SPI_Peripheral_Control(SPI2, ENABLE);
-
-	}
-
-	/* Hang here until next button press*/
-	while(!(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0)));
-
-
-}
 
 int main(void)
 {
-	/*Create GPIOD Handle for interrupt pin PD6*/
-	GPIO_Handle_t GPIO_PD6_interrupt;
 
-	/* PD6 will be used to receive an alert signal (high to low pulse)
-	 * from the arduino when it has received new data from its
-	 * serial terminal. In turn, PD6 triggers an interrupt
+	uint8_t dummyByte = 0xFF;
+
+	/* initializes PD6 */
+	Slave_GPIO_InterruptPin_Init();
+
+	/* 1. Select what SPIx peripheral you want to use
 	 *
-	 * Set !APPLICABLE! GPIO_PinConfig members to achieve this:
-	 * uint8_t GPIO_PinNumber;
-	 * uint8_t GPIO_PinMode;
-	 * uint8_t GPIO_PinSpeed;
-	 * uint8_t GPIO_PinPuPdControl;
-	 * uint8_t GPIO_PinOPType;
-	 * uint8_t GPIO_PinAltFuncMode;*/
-
-	/*TODO: why does PD6 need to configured this way? */
-	GPIO_PD6_interrupt.pGPIOx = GPIOD;										//point the handle at GPIO port D
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinNumber = GPIO_PIN_NO_6;
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinMode =  GPIO_MODE_IN_FED;
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinSpeed = GPIO_SPEED_FAST;
-	GPIO_PD6_interrupt.GPIO_PinConfig.GPIO_PinPuPdControl = GPIO_PU;
-
-	/* To apply the above settings call
-	 * GPIO_Init(GPIO_Handle_t *pGPIOHandle)
-	 * in stm32f407g_gpio_driver.c and send address of
-	 * GPIO_Handle GPIO_PD6_interrupt*/
-	GPIO_Init(&GPIO_PD6_interrupt);
-
-	/* 5. Configure the NVIC registers */
-	GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
-
-	/* 6. Set interrupt priority */
-	GPIO_IRQPriorityConfig(IRQ_NO_EXTI5_9, NVIC_IRQ_PRIO15);
-
-/* 1. Select what SPIx peripheral you want to use
- *
-* 	ALT Function Mode (page 63 of datasheet):
-* 	1) PB12 -> NSS
-	2) PB13 -> SCLK
-	3) PB14 -> MISO
-	4) PB15 -> MOSI
- *
- * 2. Create a function that sets the selected GPIO pins to their desired SPI alt
- * 	  functions ( SPI2_SPIO_Init() )*/
+	* 	ALT Function Mode (page 63 of datasheet):
+	* 	1) PB12 -> NSS
+		2) PB13 -> SCLK
+		3) PB14 -> MISO
+		4) PB15 -> MOSI
+	 *
+	 * 2. Create a function that sets the selected GPIO pins to their desired SPI alt
+	 * 	  functions  SPI2_SPIO_Init() )*/
 	SPI2_GPIO_Init();
 
-/* 3. Initialize the SPI2 Peripheral*/
+	/* 3. Initialize the SPI2 Peripheral*/
 	SPI2_Init();
 
-/* 4. Enable SSOE Bit in SPI_CR2,
- * this enables the NSS output
- * When SSM = 0, the NSS pin is managed by the HW
- * i.e.
- * when we set SPE = 1, HW will pull the NSS pin low for us
- * when we set SPE = 0, HW pulls the NSS pin high for us
- * this is how HW manages the NSS pin
- * */
+	/* 4. Enable SSOE Bit in SPI_CR2,
+	 * this enables the NSS output
+	 * When SSM = 0, the NSS pin is managed by the HW
+	 * i.e.
+	 * when we set SPE = 1, HW will pull the NSS pin low for us
+	 * when we set SPE = 0, HW pulls the NSS pin high for us
+	 * this is how HW manages the NSS pin
+	 * */
 	SPI_SSOE_Config(SPI2, ENABLE);
+
+	/* Enable RXEIE interrupt to trigger whenever
+	 * data is received*/
+	SPI_IRQ_Interrupt_Config(IRQ_NO_SPI2, ENABLE);
 
 	while(1)
 	{
-		/* Wait here for the high-to-low signal from the arduino*/
-		while(1);
 
-		/*9. Before disabling the SPI peripheral make sure its not
-		 * transmitting data
-		 *
-		 * if SPI_GetFlag_Status returns 1 program will hang here
-		 *
-		 * otherwise it'll disable SPI2 */
-		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
 
 		/*Might cause problems - not sure how*/
 		SPI_Peripheral_Control(SPI2, DISABLE);
