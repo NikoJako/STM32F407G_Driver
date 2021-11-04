@@ -181,7 +181,6 @@
   *
   * */
  void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len);
-
  void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len);
 
 
@@ -190,14 +189,7 @@
 
 
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI);
-
  void SPI_IRQPriorityConfig(uint8_t IRQNumber,uint32_t IRQPriority);
-
- /*when interrupt occurs main can call this to process the interrupt handler code
-  * Input Parameters:
-  	 *
-  *Return value:
-  	 *None */
  void SPI_IRQHandling(SPI_Handle_t *pSPIHandle);
 
 

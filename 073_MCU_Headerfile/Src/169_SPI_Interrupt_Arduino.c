@@ -14,10 +14,22 @@
 
 
 /*Dummy byte to receive ACK or NACK from slave*/
-#define DUMMY_BYTE				0xFF
+#define MAX_LEN 		500
 
+/* Global Variables */
 
-#define	MSG_1_SIZE				12
+SPI_Handle_t SPI2_Handle;
+
+volatile uint8_t rcvStop;
+
+char RcvBuff[MAX_LEN];
+
+volatile char ReadByte;
+
+/* this will be set in the interrupt handler
+ * of the Arduino Interrupt GPIO ( from the lecture,
+ * not sure what that means) */
+volatile uint8_t dataAvailable = 0;
 
 void delay(void)
 {
@@ -210,19 +222,52 @@ int main(void)
 
 	while(1)
 	{
+		rcvStop = 0;
+
+		/* Wait here until data is available to be read
+		 * from the Arduino */
+		while(!dataAvailable);
+
+		/* Now that the master knows there is data available
+		 * it disables the interrupt on PD6 until the data
+		 * has been received from the slave device */
+		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, DISABLE);
+
+		/*Enable SPI2 in preparation of reading data from
+		 * the Arduino slave device*/
+		SPI_Peripheral_Control(SPI2, ENABLE);
+
+		while(!rcvStop)
+		{
+			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 1) == SPI_BUSY_IN_TX);
+			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 1) == SPI_BUSY_IN_RX);
+		}
+
+		/* Confirm SPI isn't busy */
+		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
+
+		/* Disable the SPI2 peripheral */
 
 
-		/*Might cause problems - not sure how*/
-		SPI_Peripheral_Control(SPI2, DISABLE);
+		printf("Rcvd data: %s\n" , RcvBuff);
 
-		return 0;
+		dataAvailable = 0;
+
+		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
+
+
+
 	}
 }
 
-/*Interrupt Handler that calls the IRQ_Handler APIb*/
+/* When PD6 receives the high to low signal from the
+ * Arduino, and data is available an interrupt is
+ * triggered and this ISR is ran
+ * Interrupt Handler that calls the IRQ_Handler APIb*/
 void EXTI9_5_IRQHandler(void)
 {
 	GPIO_IRQHandling(GPIO_PIN_NO_6);
+	dataAvailable = 1;
 }
 
 void SPI2_IRQHandler(void)
