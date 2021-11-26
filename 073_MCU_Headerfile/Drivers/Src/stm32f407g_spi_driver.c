@@ -393,6 +393,8 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		}
 	}
  }
+
+
  void SPI_IRQPriorityConfig(uint8_t IRQNumber,uint32_t IRQPriority)
  {
 	 //1. determine the IPR register
@@ -521,8 +523,14 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 return curr_state;
  }
 
-  /* when the interrupt is triggered, main calls this to figure out what event
-   * caused an interrupt to trigger and what caused it to trigger
+  /* WHen the high to low pulse is received from the Arduino
+   * and
+   *
+   * When any SPI related interrupt is triggered,
+   * the IRQ handler "void SPI2_IRQHandler(void)" at the bottom
+   * of main calls our API SPI_IRQHandling(&SPI2_Handle)"
+   * It determines what interrupt has been triggered
+   * and calls the subsequent helper function to carry our ISR
    *
    * Input Parameters:
    	 * SPI handle
