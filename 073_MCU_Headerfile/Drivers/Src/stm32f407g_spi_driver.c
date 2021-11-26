@@ -319,9 +319,12 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 }
  }
 
- /*when interrupt occurs main can call this to process the interrupt handler code
+ /*Configures the Interrupt Set-enable Registers
+  * NVIC_ISER0-NVIC_ISER7 registers
+  * (page 4-4 in Cortex M4 Generic User Guide)
    * Input Parameters:
-   	 *
+   	 *IRQNumber
+   	 *ENABLE of DISABLE
    *Return value:
    	 *None */
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI)
@@ -402,9 +405,6 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	uint8_t shift_amount = (8 * iprx_section) + (8 - NO_PR_BITS_IMPLEMENTED);
 	*(NVIC_IPR_BASE_ADDR + iprx)  |= (IRQPriority << shift_amount);
  }
-
-
-
 
  /* Other Peripheral Control APIs*/
 

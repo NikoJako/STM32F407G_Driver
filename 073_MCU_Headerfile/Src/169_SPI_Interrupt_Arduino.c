@@ -233,7 +233,7 @@ int main(void)
 		 * has been received from the slave device */
 		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, DISABLE);
 
-		/*Enable SPI2 in preparation of reading data from
+		/* Enable SPI2 in preparation of reading data sent from
 		 * the Arduino slave device*/
 		SPI_Peripheral_Control(SPI2, ENABLE);
 
@@ -247,15 +247,13 @@ int main(void)
 		while(SPI_GetFlag_Status(SPI2, SPI_BUSY_FLAG));
 
 		/* Disable the SPI2 peripheral */
-
+		SPI_Peripheral_Control(SPI2, DISABLE);
 
 		printf("Rcvd data: %s\n" , RcvBuff);
 
 		dataAvailable = 0;
 
 		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
-
-
 
 	}
 }
