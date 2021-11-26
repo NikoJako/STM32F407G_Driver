@@ -187,6 +187,7 @@ int main(void)
 {
 
 	uint8_t dummyByte = 0xFF;
+	uint8_t ReadByte = 0x00;
 
 	/* initializes PD6 */
 	Slave_GPIO_InterruptPin_Init();
