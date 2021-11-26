@@ -272,3 +272,22 @@ void SPI2_IRQHandler(void)
 {
 	SPI_IRQHandling(&SPI2_Handle);
 }
+
+void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t AppEv)
+{
+	static uint32_t i = 0;
+
+	/* When AppEv == SPI_EVENT_RX_CMPLT,
+	 * copy data into the rcv buffer,
+	 * " \0 " indicates the end of the message (rcvStop = 1) */
+	if(AppEv == SPI_EVENT_RX_CMPLT)
+	{
+		RcvBuff[i++] = ReadByte;
+		if(ReadByte == '\0' || (i == MAX_LEN))
+		{
+			rcvStop = 1;
+			RcvBuff[i-1] = '\0';
+			i = 0;
+		}
+	}
+}
