@@ -300,7 +300,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 			 *((uint16_t*)pRxBuffer) = pSPIx->SPI_DR;
 
 			 len--;
-			 len --;
+			 len--;
 
 			 /*type casting and incrementing once is the same incrementing
 			  * pTxBuffer twice*/

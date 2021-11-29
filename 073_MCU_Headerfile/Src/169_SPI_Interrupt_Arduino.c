@@ -239,6 +239,8 @@ int main(void)
 
 		while(!rcvStop)
 		{
+
+			/* Fetch the data from the SPI peripheral byte by byte in the interrupt mode */
 			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 1) == SPI_BUSY_IN_TX);
 			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 1) == SPI_BUSY_IN_RX);
 		}
