@@ -511,10 +511,5 @@ void GPIO_IRQHandling(uint8_t PinNumber)
 		EXTI->EXTI_PR |= (1 << PinNumber);
 	}
 
-	uint8_t inc_msg;
-	uint32_t msg_len = 500;
-
-	SPI_ReceiveData(SPI2, &inc_msg, msg_len);
-
 }
 
