@@ -106,6 +106,25 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	  /*1. DeviceMode*/
 	  tempreg |= (pSPIHandle->SPIConfig.SPI_DeviceMode << SPI_CR1_MSTR);
 
+	  /*CRC Calculation Enable */
+	  if(pSPIHandle->SPIConfig.SPI_CRC_EN == DISABLE)
+	  {
+		  tempreg  &= ~(1 << SPI_CR1_CRC_EN);
+	  }
+	  else
+	  {
+		  tempreg  |= (ENABLE << SPI_CR1_CRC_EN);
+	  }
+
+	  if(pSPIHandle->SPIConfig.SPI_RX_ONLY == SPI_RXONLY_FULL_DUPLEX)
+	  {
+		tempreg &= ~(1 << SPI_CR1_RX_ONLY);
+	  }
+	  else
+	  {
+		  tempreg |= (SPI_RXONLY_RX_ONLY << SPI_CR1_RX_ONLY);
+	  }
+
 	  /*2. BusConfig
 	  	  if full duplex, BIDIMODE is cleared
 	   * 0: 2-line unidirectional data mode selected
@@ -127,7 +146,10 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	  }
 
 	  /*3. SCLK_Speed  -- (value << location) */
-	   tempreg |= pSPIHandle->SPIConfig.SPI_SCLK_Speed << SPI_CR1_BAUD_R3;
+	  /* clear CR1 bit positions 3:5 */
+	  tempreg &= ~(7 << SPI_CR1_BAUD_R3);
+
+	  tempreg |= pSPIHandle->SPIConfig.SPI_SCLK_Speed << SPI_CR1_BAUD_R3;
 
 	  /*4. DFF */
 	   tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
@@ -139,7 +161,24 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	   tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
 
 	  /*7. SSM */
-	   tempreg |= pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM;
+	   if (pSPIHandle->SPIConfig.SPI_SSM == SPI_SSM_DI)
+	   {
+		   tempreg &= ~(1 << SPI_CR1_SSM);
+	   }
+	   else
+	   {
+		   tempreg |= pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM;
+	   }
+
+	   /* MSB First (value << location) */
+	   if(pSPIHandle->SPIConfig.SPI_LSB_FIRST == SPI_MSB_SENT_FIRST)
+	   {
+		   tempreg &= ~(SPI_MSB_SENT_FIRST << SPI_CR1_LSB_FIRST);
+	   }
+	   else
+	   {
+		   tempreg |= (SPI_LSB_SENT_FIRST << SPI_CR1_LSB_FIRST);
+	   }
 
 	   /*7. Apply tempreg to the CR1 register*/
 	   pSPIHandle->pSPIx->SPI_CR1 = tempreg;
@@ -465,6 +504,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
    * the current state value */
  uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len)
  {
+	 //uint16_t tempreg;
 	 uint8_t curr_state = pSPIHandle->TxState;
 
 	 /* If SPIx isn't busy transmitting
@@ -485,6 +525,9 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		  * TXE flag is SET in SR */
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_TXEIE);
 
+		 /*tempreg = (1 << SPI_CR2_TXEIE);
+		 pSPIHandle->pSPIx->SPI_CR2 = tempreg;*/
+
 		 /* 4. Data transmission will be handled by the ISR code
 		  * (will implement later)*/
 	 }
@@ -494,7 +537,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
  }
 
 
- uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t len)
+ uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, volatile uint8_t *pRxBuffer, uint32_t len)
  {
 	 uint8_t curr_state = pSPIHandle->RxState;
 
@@ -502,7 +545,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 	  * do the following */
 	 	 if(curr_state != SPI_BUSY_IN_RX)
 	 	 {
-		 /* 1. Save the Tx Buffer address and len information in
+		 /* 1. Save the Rx Buffer address and len information in
 			  * some global variables */
 		 pSPIHandle->pRxBuffer = pRxBuffer;
 		 pSPIHandle->RxLen = len;

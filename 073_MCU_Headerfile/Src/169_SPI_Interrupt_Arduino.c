@@ -105,16 +105,20 @@ void SPI2_Init()
 			 uint8_t SPI_SSM;
 		 }SPI_Config_t;*/
 
-	SPI_Handle_t SPI2_Handle;
+	//SPI_Handle_t SPI2_Handle;
 
 	SPI2_Handle.pSPIx = SPI2;
 	SPI2_Handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
 	SPI2_Handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FULL;
 	SPI2_Handle.SPIConfig.SPI_SCLK_Speed = SPI_SCLK_SPEED_DIV_8; 	/*Generates SCLK of 2 MHz*/
+	SPI2_Handle.SPIConfig.SPI_CRC_EN = DISABLE;
+	SPI2_Handle.SPIConfig.SPI_RX_ONLY = SPI_RXONLY_FULL_DUPLEX;
+	SPI2_Handle.SPIConfig.SPI_SSM = SPI_SSM_DI; 					/* HW Slave Management*/
+	SPI2_Handle.SPIConfig.SPI_LSB_FIRST = SPI_MSB_SENT_FIRST;
 	SPI2_Handle.SPIConfig.SPI_DFF = SPI_DFF_8_Bits;
 	SPI2_Handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
 	SPI2_Handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
-	SPI2_Handle.SPIConfig.SPI_SSM = SPI_SSM_DI; 					/* HW Slave Management*/
+
 
 	/*this use to be SPI2_Init Apply settings*/
 	SPI_Init(&SPI2_Handle);
@@ -251,8 +255,6 @@ int main(void)
 		/* Disable the SPI2 peripheral */
 		SPI_Peripheral_Control(SPI2, DISABLE);
 
-		printf("Rcvd data: %s\n" , RcvBuff);
-
 		dataAvailable = 0;
 
 		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, ENABLE);
@@ -291,5 +293,6 @@ void SPI_ApplicationEventCallback(SPI_Handle_t *pSPIHandle, uint8_t AppEv)
 			RcvBuff[i-1] = '\0';
 			i = 0;
 		}
+		printf("Rcvd data: %s\n" , RcvBuff);
 	}
 }

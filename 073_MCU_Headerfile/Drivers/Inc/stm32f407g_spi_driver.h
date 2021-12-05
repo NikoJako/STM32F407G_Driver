@@ -29,7 +29,10 @@
 	 uint8_t SPI_DeviceMode;
 	 uint8_t SPI_BusConfig;
 	 uint8_t SPI_SCLK_Speed;
+	 uint8_t SPI_CRC_EN;
 	 uint8_t SPI_DFF;
+	 uint8_t SPI_RX_ONLY;
+	 uint8_t SPI_LSB_FIRST;
 	 uint8_t SPI_CPOL;
 	 uint8_t SPI_CPHA;
 	 uint8_t SPI_SSM;
@@ -69,15 +72,6 @@
 #define SPI_EVENT_CRC_ERR			4
 
  /*
-  *
-  *
-  * @SPI_DeviceMode - master or slave
-  *
-  * */
- #define SPI_DEVICE_MODE_MASTER	1
- #define SPI_DEVICE_MODE_SLAVE	0
-
- /*
    * @SPI_BusConfig - half or full duplex
    *
    * */
@@ -86,28 +80,51 @@
 #define SPI_BUS_CONFIG_SIMP_RX	3
 
  /*
-    * @SPI_SCLK_Speed - these are the prescalars to divide the peripheral clock
-    * by fpclk by (peripheral clk)
-    *
-    * */
-#define SPI_SCLK_SPEED_DIV_2	0
-#define SPI_SCLK_SPEED_DIV_4	1
-#define SPI_SCLK_SPEED_DIV_8	2
-#define SPI_SCLK_SPEED_DIV_16	3
-#define SPI_SCLK_SPEED_DIV_32	4
-#define SPI_SCLK_SPEED_DIV_64	5
-#define SPI_SCLK_SPEED_DIV_128	6
-#define SPI_SCLK_SPEED_DIV_256	7
+     * @SPI_DFF - data framing format size
+     * determines if 8 or 16 bits are buffered in the shift register before pushing
+     * to Rx buffer
+     *
+     * */
+ #define SPI_DFF_8_Bits				0
+ #define SPI_DFF_16_Bits			1
 
  /*
-    * @SPI_DFF - data framing format size
-    * determines if 8 or 16 bits are buffered in the shift register before pushing
-    * to Rx buffer
-    *
-    * */
-#define SPI_DFF_8_Bits			0
-#define SPI_DFF_16_Bits			1
+     * @SPI_RX_ONLY - Receive Only
+     *  */
+#define SPI_RXONLY_FULL_DUPLEX		0
+#define SPI_RXONLY_RX_ONLY			1
 
+ /*
+     * @SPI_SSM - slave select management
+     *
+     * */
+ #define SPI_SSM_EN				1
+ #define SPI_SSM_DI				0
+
+ /*
+      * @SPI_LSB_FIRST - Frame Format
+      *  */
+#define SPI_MSB_SENT_FIRST			0
+#define SPI_LSB_SENT_FIRST			1
+
+ /*
+     * @SPI_SCLK_Speed - these are the prescalars to divide the peripheral clock
+     * by fpclk by (peripheral clk)
+     * */
+ #define SPI_SCLK_SPEED_DIV_2	0
+ #define SPI_SCLK_SPEED_DIV_4	1
+ #define SPI_SCLK_SPEED_DIV_8	2
+ #define SPI_SCLK_SPEED_DIV_16	3
+ #define SPI_SCLK_SPEED_DIV_32	4
+ #define SPI_SCLK_SPEED_DIV_64	5
+ #define SPI_SCLK_SPEED_DIV_128	6
+ #define SPI_SCLK_SPEED_DIV_256	7
+
+ /* @SPI_DeviceMode - master or slave
+  *
+  * */
+ #define SPI_DEVICE_MODE_MASTER	1
+ #define SPI_DEVICE_MODE_SLAVE	0
 
  /*
     * @SPI_CPOL - clock polarity - the value that the clock is at time = 0
@@ -115,7 +132,6 @@
     * */
 #define SPI_CPOL_HIGH			1
 #define SPI_CPOL_LOW			0
-
 
  /*
     * @SPI_CPHA - clock phase - determines what edge of the clock data will be
@@ -125,12 +141,7 @@
 #define SPI_CPHA_HIGH			1
 #define SPI_CPHA_LOW			0
 
- /*
-    * @SPI_SSM - slave select management
-    *
-    * */
-#define SPI_SSM_EN				1
-#define SPI_SSM_DI				0
+
 
  /*
     * SPI related status flag definitions
@@ -185,7 +196,7 @@
 
 
  uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len);
- uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pRxBuffer, uint32_t len);
+ uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, volatile uint8_t *pRxBuffer, uint32_t len);
 
 
  void SPI_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI);

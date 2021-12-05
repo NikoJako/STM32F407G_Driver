@@ -168,6 +168,7 @@ typedef struct
 #define GPIOH_REG_RESET()	do{ (RCC->RCC_AHB1RSTR |= (1 << 7)); (RCC->RCC_AHB1RSTR &= ~(1 << 7));}while(0)
 #define GPIOI_REG_RESET()	do{ (RCC->RCC_AHB1RSTR |= (1 << 8)); (RCC->RCC_AHB1RSTR &= ~(1 << 8));}while(0)
 
+/* (condition) ? value_if_true : value_if_false */
 #define GPIO_BASE_ADDR_TO_CODE(x) ( (x == GPIOA) ? 0 : \
 									(x == GPIOB) ? 1 : \
 									(x == GPIOC) ? 2 : \
