@@ -270,16 +270,17 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	  * */
 	 if (pGPIOHandle->GPIO_PinConfig.GPIO_PinMode == GPIO_MODE_ALT_FUNC)
 	 {
-		 uint8_t temp1, temp2;
+		 uint8_t temp3 = 0;
+		 uint8_t temp4 = 0;
 
-		 temp1 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 8);
-		 temp2 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 8);
+		 temp3 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 8);
+		 temp4 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 8);
 
 		 //clearing the AFR register before setting
-		 pGPIOHandle->pGPIOx->AFR[temp1] &= ~(0xF << (4 * temp2));
+		 pGPIOHandle->pGPIOx->AFR[temp3] &= ~(0xF << (4 * temp4));
 
 		 //setting appropriate ARF bits
-		 pGPIOHandle->pGPIOx->AFR[temp1] |= (pGPIOHandle->GPIO_PinConfig.GPIO_PinAltFuncMode << (4 * temp2));
+		 pGPIOHandle->pGPIOx->AFR[temp3] |= (pGPIOHandle->GPIO_PinConfig.GPIO_PinAltFuncMode << (4 * temp4));
 	 }
 }
 

@@ -24,7 +24,7 @@ volatile uint8_t rcvStop = 0;
 
 char RcvBuff[MAX_LEN];
 
-volatile char ReadByte;
+char ReadByte;
 
 /* this will be set in the interrupt handler
  * of the Arduino Interrupt GPIO ( from the lecture,
@@ -84,7 +84,7 @@ void SPI2_GPIO_Init()
 	GPIO_Init(&SPIPins);
 }
 
-void SPI2_Init()
+void SPI2_Init(SPI_Handle_t *pSPI2_Handle)
 {
 	/*Create a SPI handle, then fill in the data:
 	 *
@@ -105,19 +105,19 @@ void SPI2_Init()
 			 uint8_t SPI_SSM;
 		 }SPI_Config_t;*/
 
-	//SPI_Handle_t SPI2_Handle;
-
-	SPI2_Handle.pSPIx = SPI2;
-	SPI2_Handle.SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
-	SPI2_Handle.SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FULL;
-	SPI2_Handle.SPIConfig.SPI_SCLK_Speed = SPI_SCLK_SPEED_DIV_8; 	/*Generates SCLK of 2 MHz*/
-	SPI2_Handle.SPIConfig.SPI_CRC_EN = DISABLE;
-	SPI2_Handle.SPIConfig.SPI_RX_ONLY = SPI_RXONLY_FULL_DUPLEX;
-	SPI2_Handle.SPIConfig.SPI_SSM = SPI_SSM_DI; 					/* HW Slave Management*/
-	SPI2_Handle.SPIConfig.SPI_LSB_FIRST = SPI_MSB_SENT_FIRST;
-	SPI2_Handle.SPIConfig.SPI_DFF = SPI_DFF_8_Bits;
-	SPI2_Handle.SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
-	SPI2_Handle.SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
+	pSPI2_Handle->pSPIx = SPI2;
+	pSPI2_Handle->SPIConfig.SPI_DeviceMode = SPI_DEVICE_MODE_MASTER;
+	pSPI2_Handle->SPIConfig.SPI_BusConfig = SPI_BUS_CONFIG_FULL;
+	pSPI2_Handle->SPIConfig.SPI_SCLK_Speed = SPI_SCLK_SPEED_DIV_8; 	/*Generates SCLK of 2 MHz*/
+	pSPI2_Handle->SPIConfig.SPI_Enable = DISABLE;
+	pSPI2_Handle->SPIConfig.SPI_CRC_EN = DISABLE;
+	pSPI2_Handle->SPIConfig.SPI_RX_ONLY = SPI_RXONLY_FULL_DUPLEX;
+	pSPI2_Handle->SPIConfig.SPI_SSM = SPI_SSM_DI; 					/* HW Slave Management*/
+	pSPI2_Handle->SPIConfig.SPI_SSI = SPI_SSI_HIGH;
+	pSPI2_Handle->SPIConfig.SPI_LSB_FIRST = SPI_MSB_SENT_FIRST;
+	pSPI2_Handle->SPIConfig.SPI_DFF = SPI_DFF_8_Bits;
+	pSPI2_Handle->SPIConfig.SPI_CPOL = SPI_CPOL_LOW;
+	pSPI2_Handle->SPIConfig.SPI_CPHA = SPI_CPHA_LOW;
 
 
 	/*this use to be SPI2_Init Apply settings*/
@@ -190,6 +190,7 @@ void Slave_GPIO_InterruptPin_Init()
 int main(void)
 {
 
+
 	uint8_t dummyByte = 0xFF;
 
 	/* initializes PD6 */
@@ -208,7 +209,7 @@ int main(void)
 	SPI2_GPIO_Init();
 
 	/* 3. Initialize the SPI2 Peripheral*/
-	SPI2_Init();
+	SPI2_Init(&SPI2_Handle);
 
 	/* 4. Enable SSOE Bit in SPI_CR2,
 	 * this enables the NSS output
@@ -232,7 +233,9 @@ int main(void)
 		 * from the Arduino */
 		while(!dataAvailable);
 
-		/* Now that the master knows there is data available
+		/* First code executed after EXTI9_5_IRQHandler(void) ISR
+		 *
+		 * Now that the master knows there is data available
 		 * it disables the interrupt on PD6 until the data
 		 * has been received from the slave device */
 		GPIO_IRQ_Interrupt_Config(IRQ_NO_EXTI5_9, DISABLE);
@@ -244,9 +247,18 @@ int main(void)
 		while(!rcvStop)
 		{
 
-			/* Fetch the data from the SPI peripheral byte by byte in the interrupt mode */
-			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 1) == SPI_BUSY_IN_TX);
-			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 1) == SPI_BUSY_IN_RX);
+			/* Fetch the data from the SPI peripheral
+			 * byte by byte in the interrupt mode
+			 *
+			 * SendData_IT set TxState to SPI_BUSY_IN_TX and sets TXEIE
+			 * Once TXEIE is set it will trigger an interrupt when TXE == 1
+			 * ReceiveData_IT sets RxState to SPI_BUSY_IN_RX and sets RXNEIE
+			 * Once RXNEIE is set, it will trigger an interrupt once RXNE == 1
+			 * RXNE == 1 means that the receive buffer isn't empty, i.e. data
+			 * has arrived */
+			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 20) == SPI_BUSY_IN_TX);
+			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 20) == SPI_BUSY_IN_RX);
+
 		}
 
 		/* Confirm SPI isn't busy */

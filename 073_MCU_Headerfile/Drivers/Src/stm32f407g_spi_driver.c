@@ -151,14 +151,48 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
 	  tempreg |= pSPIHandle->SPIConfig.SPI_SCLK_Speed << SPI_CR1_BAUD_R3;
 
+	  /* SPE */
+	  if(pSPIHandle->SPIConfig.SPI_Enable == DISABLE)
+	  {
+		  tempreg &= ~(1 << SPI_CR1_SPE);
+	  }
+	  else
+	  {
+		  tempreg |= (pSPIHandle->SPIConfig.SPI_Enable << SPI_CR1_SPE);
+	  }
+
+
 	  /*4. DFF */
-	   tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
+	  if(pSPIHandle->SPIConfig.SPI_DFF == SPI_DFF_8_Bits)
+	  {
+		  tempreg &= ~(1 << SPI_CR1_DFF);
+	  }
+	  else
+	  {
+		  tempreg |= pSPIHandle->SPIConfig.SPI_DFF << SPI_CR1_DFF;
+	  }
 
 	  /*5. CPOL */
-	   tempreg |= pSPIHandle->SPIConfig.SPI_CPOL << SPI_CR1_CPOL;
+	   if(pSPIHandle->SPIConfig.SPI_CPOL == SPI_CPOL_LOW)
+	   {
+		   tempreg &= ~(1 << SPI_CR1_CPOL);
+	   }
+	   else
+	   {
+		   tempreg |= (1 << SPI_CR1_CPOL);
+	   }
+
 
 	  /*6. CPHA */
-	   tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
+	   if(pSPIHandle->SPIConfig.SPI_CPHA == SPI_CPHA_LOW)
+	   {
+		   tempreg &= ~(1 << SPI_CR1_CPHA);
+	   }
+	   else
+	   {
+		   tempreg |= pSPIHandle->SPIConfig.SPI_CPHA << SPI_CR1_CPHA;
+	   }
+
 
 	  /*7. SSM */
 	   if (pSPIHandle->SPIConfig.SPI_SSM == SPI_SSM_DI)
@@ -168,6 +202,16 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	   else
 	   {
 		   tempreg |= pSPIHandle->SPIConfig.SPI_SSM << SPI_CR1_SSM;
+	   }
+
+	   /* SSI */
+	   if (pSPIHandle->SPIConfig.SPI_SSI == SPI_SSI_LOW)
+	   {
+		   tempreg &= ~(1 << SPI_CR1_SSI);
+	   }
+	   else
+	   {
+		   tempreg |= pSPIHandle->SPIConfig.SPI_SSI << SPI_CR1_SSI;
 	   }
 
 	   /* MSB First (value << location) */
@@ -458,11 +502,17 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 {
 		 /* Set the SPE bit (#6) in SPI_CR1*/
 		 pSPIx->SPI_CR1 |= (1 << SPI_CR1_SPE);
+
+		 /* Enable the SPI Error Interrupt in SPIx_CR2 */
+		 pSPIx->SPI_CR2 |= (1 << SPI_CR2_ERRIE);
 	 }
  	else
  	 {
  		/* Clear the SPE bit (#6) in SPI_CR1*/
 		 pSPIx->SPI_CR1 &= ~(1 << SPI_CR1_SPE);
+
+		 /* Disable the SPI Error Interrupt in SPIx_CR2 */
+		 pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_ERRIE);
  	 }
  }
 
@@ -502,13 +552,18 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
    	 *
    *Return value:
    * the current state value */
- uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len)
+ uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, volatile uint8_t *pTxBuffer, uint32_t len)
  {
 	 //uint16_t tempreg;
 	 uint8_t curr_state = pSPIHandle->TxState;
 
 	 /* If SPIx isn't busy transmitting
-	  * do the following */
+	  * do the following
+	  *
+	  * SPI_READY		0
+	  * SPI_BUSY_IN_RX	1
+	  * SPI_BUSY_IN_TX	2
+	  *  */
 	 if(curr_state != SPI_BUSY_IN_TX)
 	 {
 		 /* 1. Save the Tx Buffer address and len information in
@@ -657,7 +712,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 {
 		 /*8-bit - Load DR with 1 byte of data
 		  * and increment the buffer address*/
-		 pSPIHandle->pSPIx->SPI_DR = *((uint8_t*)pSPIHandle->pTxBuffer);
+		 pSPIHandle->pSPIx->SPI_DR = *(uint8_t*)pSPIHandle->pTxBuffer;
 		 pSPIHandle->TxLen--;
 		 pSPIHandle->pTxBuffer++;
 	 }
@@ -758,7 +813,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 /* 1. Clear the OVR flag
 	  * 2. Inform the application*/
 
-	 uint8_t temp;
+	 uint16_t temp;
 
 	 /* If the SPIx isn't currently busy Tx'n,
 	  * clear the OVR flag by:

@@ -29,6 +29,7 @@
 	 uint8_t SPI_DeviceMode;
 	 uint8_t SPI_BusConfig;
 	 uint8_t SPI_SCLK_Speed;
+	 uint8_t SPI_Enable;
 	 uint8_t SPI_CRC_EN;
 	 uint8_t SPI_DFF;
 	 uint8_t SPI_RX_ONLY;
@@ -36,6 +37,7 @@
 	 uint8_t SPI_CPOL;
 	 uint8_t SPI_CPHA;
 	 uint8_t SPI_SSM;
+	 uint8_t SPI_SSI;
  }SPI_Config_t;
 
  /****************************************************************************************
@@ -46,8 +48,8 @@
  {
 	 SPI_RegDef_t	*pSPIx; 			/*This holds the base address of SPIx(x:0,1,2)*/
 	 SPI_Config_t	SPIConfig;
-	 uint8_t		*pTxBuffer;
-	 uint8_t		*pRxBuffer;
+	 volatile uint8_t		*pTxBuffer;
+	 volatile uint8_t		*pRxBuffer;
 	 uint32_t		TxLen;
 	 uint32_t		RxLen;
 	 uint8_t		TxState;
@@ -98,8 +100,16 @@
      * @SPI_SSM - slave select management
      *
      * */
- #define SPI_SSM_EN				1
- #define SPI_SSM_DI				0
+ #define SPI_SSM_EN					1
+ #define SPI_SSM_DI					0
+
+
+ /*
+      * @SPI_SSI - Internal slave select
+      *
+      * */
+#define SPI_SSI_LOW					0
+#define SPI_SSI_HIGH				1
 
  /*
       * @SPI_LSB_FIRST - Frame Format
@@ -111,14 +121,14 @@
      * @SPI_SCLK_Speed - these are the prescalars to divide the peripheral clock
      * by fpclk by (peripheral clk)
      * */
- #define SPI_SCLK_SPEED_DIV_2	0
- #define SPI_SCLK_SPEED_DIV_4	1
- #define SPI_SCLK_SPEED_DIV_8	2
- #define SPI_SCLK_SPEED_DIV_16	3
- #define SPI_SCLK_SPEED_DIV_32	4
- #define SPI_SCLK_SPEED_DIV_64	5
- #define SPI_SCLK_SPEED_DIV_128	6
- #define SPI_SCLK_SPEED_DIV_256	7
+ #define SPI_SCLK_SPEED_DIV_2		0
+ #define SPI_SCLK_SPEED_DIV_4		1
+ #define SPI_SCLK_SPEED_DIV_8		2
+ #define SPI_SCLK_SPEED_DIV_16		3
+ #define SPI_SCLK_SPEED_DIV_32		4
+ #define SPI_SCLK_SPEED_DIV_64		5
+ #define SPI_SCLK_SPEED_DIV_128		6
+ #define SPI_SCLK_SPEED_DIV_256		7
 
  /* @SPI_DeviceMode - master or slave
   *
@@ -195,7 +205,7 @@
  void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len);
 
 
- uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, uint8_t *pTxBuffer, uint32_t len);
+ uint8_t SPI_SendData_IT(SPI_Handle_t *pSPIHandle, volatile uint8_t *pTxBuffer, uint32_t len);
  uint8_t SPI_ReceiveData_IT(SPI_Handle_t *pSPIHandle, volatile uint8_t *pRxBuffer, uint32_t len);
 
 
