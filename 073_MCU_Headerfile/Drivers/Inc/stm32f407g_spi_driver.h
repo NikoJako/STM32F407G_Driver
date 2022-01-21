@@ -46,14 +46,14 @@
 
  typedef struct
  {
-	 SPI_RegDef_t	*pSPIx; 			/*This holds the base address of SPIx(x:0,1,2)*/
-	 SPI_Config_t	SPIConfig;
+	 SPI_RegDef_t			*pSPIx; 			/*This holds the base address of SPIx(x:0,1,2)*/
+	 SPI_Config_t			SPIConfig;
 	 volatile uint8_t		*pTxBuffer;
 	 volatile uint8_t		*pRxBuffer;
-	 uint32_t		TxLen;
-	 uint32_t		RxLen;
-	 uint8_t		TxState;
-	 uint8_t		RxState;
+	 uint32_t					TxLen;
+	 uint32_t					RxLen;
+	 uint8_t						TxState;
+	 uint8_t						RxState;
 
  }SPI_Handle_t;
 
@@ -63,23 +63,23 @@
    ****************************************************************************************/
 
 /* SPI Application States */
-#define SPI_READY					0
-#define SPI_BUSY_IN_RX				1
-#define SPI_BUSY_IN_TX				2
+#define SPI_READY										0
+#define SPI_BUSY_IN_RX							1
+#define SPI_BUSY_IN_TX							2
 
  /* SPI Application Events */
-#define SPI_EVENT_TX_CMPLT			1
-#define SPI_EVENT_RX_CMPLT			2
-#define SPI_EVENT_OVR_ERR			3
-#define SPI_EVENT_CRC_ERR			4
+#define SPI_EVENT_TX_CMPLT					1
+#define SPI_EVENT_RX_CMPLT				2
+#define SPI_EVENT_OVR_ERR					3
+#define SPI_EVENT_CRC_ERR					4
 
  /*
    * @SPI_BusConfig - half or full duplex
    *
    * */
-#define SPI_BUS_CONFIG_FULL		1
-#define SPI_BUS_CONFIG_HALF		2
-#define SPI_BUS_CONFIG_SIMP_RX	3
+#define SPI_BUS_CONFIG_FULL				1
+#define SPI_BUS_CONFIG_HALF				2
+#define SPI_BUS_CONFIG_SIMP_RX		3
 
  /*
      * @SPI_DFF - data framing format size

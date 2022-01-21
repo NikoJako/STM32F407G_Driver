@@ -221,8 +221,7 @@ int main(void)
 	 * */
 	SPI_SSOE_Config(SPI2, ENABLE);
 
-	/* Enable RXEIE interrupt to trigger whenever
-	 * data is received*/
+	/*Configure and ENABLE IRQNumber in NVIC_ISERx*/
 	SPI_IRQ_Interrupt_Config(IRQ_NO_SPI2, ENABLE);
 
 	while(1)
@@ -256,8 +255,8 @@ int main(void)
 			 * Once RXNEIE is set, it will trigger an interrupt once RXNE == 1
 			 * RXNE == 1 means that the receive buffer isn't empty, i.e. data
 			 * has arrived */
-			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 20) == SPI_BUSY_IN_TX);
-			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 20) == SPI_BUSY_IN_RX);
+			while(SPI_SendData_IT(&SPI2_Handle, &dummyByte, 1) == SPI_BUSY_IN_TX);
+			while (SPI_ReceiveData_IT(&SPI2_Handle, &ReadByte, 1) == SPI_BUSY_IN_RX);
 
 		}
 

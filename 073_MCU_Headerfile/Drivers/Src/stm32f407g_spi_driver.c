@@ -578,7 +578,11 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
 		 /* 3. Enable the TXEIE control bit to get interrupt whenever
 		  * TXE flag is SET in SR */
+		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_ERRIE);
+
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_TXEIE);
+
+
 
 		 /*tempreg = (1 << SPI_CR2_TXEIE);
 		 pSPIHandle->pSPIx->SPI_CR2 = tempreg;*/
@@ -612,6 +616,8 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 
 		 /* 3. Enable the RXNEIE control bit to get interrupt whenever
 		  * RXNE flag is SET in SR */
+		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_ERRIE);
+
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_RXNEIE);
 
 		 /* 4. Data transmission will be handled by the ISR code
@@ -712,7 +718,11 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 {
 		 /*8-bit - Load DR with 1 byte of data
 		  * and increment the buffer address*/
-		 pSPIHandle->pSPIx->SPI_DR = *(uint8_t*)pSPIHandle->pTxBuffer;
+		 pSPIHandle->pSPIx->SPI_DR = *(uint32_t*)pSPIHandle->pTxBuffer;
+
+		 /* Save whatever caused RXNE to SET*/
+		*( pSPIHandle->pRxBuffer) = ((uint8_t*)pSPIHandle->pSPIx->SPI_DR);
+
 		 pSPIHandle->TxLen--;
 		 pSPIHandle->pTxBuffer++;
 	 }
@@ -832,9 +842,13 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	  * inform the application that SPI
 	  * is over:
 	  *
-	  * 1. Disable TXEIE interrupts generated from
+	  * 1. Disable ERRIE & TXEIE interrupts generated from
 	  * setting the TXE flag */
+	 pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_ERRIE);
+
 	 pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_TXEIE);
+
+
 
 	 /* Reset TxBuffers */
 	 pSPIHandle->pTxBuffer = NULL;
@@ -848,8 +862,10 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	  * inform the application that SPI
 	  * is over:
 	  *
-	  * 1. Disable RXNEIE interrupts generated from
+	  * 1. Disable EERIE &  RXNEIE interrupts generated from
 	  * setting the TXE flag */
+	 pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_ERRIE);
+
 	 pSPIHandle->pSPIx->SPI_CR2 &= ~(1 << SPI_CR2_RXNEIE);
 
 	 /* Reset RxBuffers */
