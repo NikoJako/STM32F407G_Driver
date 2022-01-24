@@ -292,115 +292,9 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		 /*Tx buffer is Empty */
 		 return FLAG_SET;
 	 }
-
-
  }
 
- /* Data Send and Receive
-  * pSPIx user-provided pointer to the data to be sent
-  * pTxBuffer is used to store the user provided data
-  * len is used to tell how many bytes the API should send
-  *
-  * */
- void SPI_SendData(SPI_RegDef_t *pSPIx, uint8_t *pTxBuffer, uint32_t len)
- {
-	 /*While there is data to be sent,
-	  * Otherwise there is no data to send*/
-	 while(len > 0)
-	 {
-		 /*Get TXE flag status in CR1
-		  * if the Tx buffer isn't empty then wait here for remaining data
-		  * to be sent,
-		  * otherwise move on to checking the DFF flag
-		  *
-		  * if something breaks on the SPI peripheral, there is a chance
-		  * that the code could hang here permanently - need watchdog
-		  * timer */
 
-		 while(SPI_GetFlag_Status(pSPIx, SPI_TXE_FLAG) == FLAG_RESET);
-		 /*Check the DFF value (11th bit in SPI_CR)
-		  * 0 means set to 8-bit
-		  * 1 means set to 16-bit
-		  *
-		  * pSPIx->SPI_CR1 & (1 << 11))
-		  * 0000100000000000
-		  *     1
-		  * */
-		 if(pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
-		 {
-			 /*16-bit - CLAIRIFY THIS - Load DR with 1 byte of data
-			  * and increment the buffer address
-			  *
-			  * 1. load the data into the register by type casting
-			  * uint8_t pTxBuffer into uint16_t* pointer type - I don't understand that
-			  * if you omitted the uint16_t* you would only load 8 bits
-			  * into the DR
-			  *
-			  * Breakdown of *((uint16_t*)pTxBuffer);
-			  * "*" is the dereference operator
-			  * "(uint16_t*)" is the typecast to uint16_t pointer data type
-			  * if I were to change it to uint32_t* the date would then be
-			  * uint32_t* data
-			  *
-			  * */
-			 pSPIx->SPI_DR = *((uint16_t*)pTxBuffer);
-
-			 len--;
-			 len --;
-
-			 /*type casting and incrementing once is the same incrementing
-			  * pTxBuffer twice*/
-			 (uint16_t*)pTxBuffer++;
-
-		 }
-		 else
-		 {
-			 /*8-bit - Load DR with 1 byte of data
-			  * and increment the buffer address*/
-			 pSPIx->SPI_DR = *pTxBuffer;
-
-			 len--;
-
-			 pTxBuffer++;
-
-		 }
-
-
-	 }
- }
- void SPI_ReceiveData(SPI_RegDef_t *pSPIx, uint8_t *pRxBuffer, uint32_t len)
- {
-	 /*While there is data to be received */
-	 while(len > 0)
-	 {
-		 /*If the receive buffer hasn't received anything yet wait here
-		  * otherwise check the DFF bit*/
-		 while(SPI_GetFlag_Status(pSPIx, SPI_RXNE_FLAG) == RESET);
-
-		 if(pSPIx->SPI_CR1 & (1 << SPI_CR1_DFF))
-		 {
-			 /*Move the received data in the SPI_DR into the pRxBuffer */
-			 *((uint16_t*)pRxBuffer) = pSPIx->SPI_DR;
-
-			 len--;
-			 len--;
-
-			 /*type casting and incrementing once is the same incrementing
-			  * pTxBuffer twice*/
-			 (uint16_t*)pRxBuffer++;
-		 }
-		 else
-		 {
-			 /*8-bit - Move 1 byte of received data in the SPI_DR
-			  * into the pRxBuffer and increment the buffer address*/
-			  *pRxBuffer = pSPIx->SPI_DR;
-
-			 len--;
-
-			 pRxBuffer++;
-		 }
-	 }
- }
 
  /*Configures the Interrupt Set-enable Registers
   * NVIC_ISER0-NVIC_ISER7 registers
@@ -571,24 +465,19 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 		 pSPIHandle->pTxBuffer = pTxBuffer;
 		 pSPIHandle->TxLen = len;
 
-		 /* 2. Mark the SPI state as busy in transmission so that no
+		 /* 3. Mark the SPI state as busy in transmission so that no
 		  * other code can take over the same peripheral until
 		  * transmission is over*/
 		 pSPIHandle->TxState = SPI_BUSY_IN_TX;
 
-		 /* 3. Enable the TXEIE control bit to get interrupt whenever
-		  * TXE flag is SET in SR */
+		  /* 4. Enable the ERRIE, TXEIE & RXNEIE control bits to get interrupt whenever
+		  * the EERIE, TXE or RXNE flag is SET in SR */
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_ERRIE);
 
 		 pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_TXEIE);
 
+		 //pSPIHandle->pSPIx->SPI_CR2 |= (1 << SPI_CR2_RXNEIE);
 
-
-		 /*tempreg = (1 << SPI_CR2_TXEIE);
-		 pSPIHandle->pSPIx->SPI_CR2 = tempreg;*/
-
-		 /* 4. Data transmission will be handled by the ISR code
-		  * (will implement later)*/
 	 }
 
 	 return curr_state;
@@ -605,7 +494,7 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 	 if(curr_state != SPI_BUSY_IN_RX)
 	 	 {
 		 /* 1. Save the Rx Buffer address and len information in
-			  * some global variables */
+			  * some global variables*/
 		 pSPIHandle->pRxBuffer = pRxBuffer;
 		 pSPIHandle->RxLen = len;
 
@@ -718,10 +607,12 @@ static void spi_ovr_err_interrupt_handle(SPI_Handle_t *pHandle);
 	 {
 		 /*8-bit - Load DR with 1 byte of data
 		  * and increment the buffer address*/
-		 pSPIHandle->pSPIx->SPI_DR = *(uint32_t*)pSPIHandle->pTxBuffer;
+		 pSPIHandle->pSPIx->SPI_DR = *((uint32_t*)pSPIHandle->pTxBuffer);
 
 		 /* Save whatever caused RXNE to SET*/
-		*( pSPIHandle->pRxBuffer) = ((uint8_t*)pSPIHandle->pSPIx->SPI_DR);
+		//*(pSPIHandle->pRxBuffer) = (( uint8_t)pSPIHandle->pSPIx->SPI_DR);
+
+		/* Should I decrement  pRxBuffer?*/
 
 		 pSPIHandle->TxLen--;
 		 pSPIHandle->pTxBuffer++;
