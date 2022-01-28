@@ -32,11 +32,11 @@
 #include <sys/times.h>
 
 //Debug Exception and Monitor Control Register base address
-#define DEMCR        			*((volatile uint32_t*) 0xE000EDFCU )
+#define DEMCR        							*((volatile uint32_t*) 0xE000EDFCU )
 
 /* ITM register addresses */
 #define ITM_STIMULUS_PORT0   	*((volatile uint32_t*) 0xE0000000 )
-#define ITM_TRACE_EN          	*((volatile uint32_t*) 0xE0000E00 )
+#define ITM_TRACE_EN          			*((volatile uint32_t*) 0xE0000E00 )
 
 
 /* Variables */
