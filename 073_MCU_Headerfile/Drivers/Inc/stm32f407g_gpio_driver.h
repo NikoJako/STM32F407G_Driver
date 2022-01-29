@@ -16,18 +16,18 @@
 // Settings to configure a GPIO port
 typedef struct
 {
-	uint8_t GPIO_PinNumber;			// possible values from @GPIO_PIN_NUMBERS
-	uint8_t GPIO_PinMode;			// possible values from @GPIO PIN_MODES (below)
-	uint8_t GPIO_PinSpeed;			// possible values from @GPIO_PIN_SPEED
-	uint8_t GPIO_PinPuPdControl;	// possible values from @GPIO_PinPuPdControl
-	uint8_t GPIO_PinOPType;			// possible values from @GPIO_PinOPType
-	uint8_t GPIO_PinAltFuncMode;	// possible values from @GPIO_PinAltFunMode
+	uint8_t GPIO_PinNumber;						// possible values from @GPIO_PIN_NUMBERS
+	uint8_t GPIO_PinMode;							// possible values from @GPIO PIN_MODES (below)
+	uint8_t GPIO_PinSpeed;							// possible values from @GPIO_PIN_SPEED
+	uint8_t GPIO_PinPuPdControl;				// possible values from @GPIO_PinPuPdControl
+	uint8_t GPIO_PinOPType;						// possible values from @GPIO_PinOPType
+	uint8_t GPIO_PinAltFuncMode;				// possible values from @GPIO_PinAltFunMode
 }GPIO_PinConfig_t;
 
 typedef struct
 {
-	GPIO_RegDef_t *pGPIOx;				//this holds the base address of the GPIO port to which the pin belongs
-	GPIO_PinConfig_t GPIO_PinConfig; 	//this holds GPIO pin configuration settings
+	GPIO_RegDef_t *pGPIOx;						//this holds the base address of the GPIO port to which the pin belongs
+	GPIO_PinConfig_t GPIO_PinConfig; 		//this holds GPIO pin configuration settings
 }GPIO_Handle_t;
 
 

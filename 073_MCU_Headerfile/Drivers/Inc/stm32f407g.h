@@ -363,18 +363,19 @@ typedef struct
 /*************************************************************************************/
 /*************************************************************************************/
 
+/* I2Cx Register Definition */
 typedef struct
 {
-	volatile uint32_t I2C_R1;			//Control register 1			(0x00)
-	volatile uint32_t I2C_CR2;			//Control registers 2		 	(0x04)
-	volatile uint32_t I2C_OAR1;			//Own Address Register 1		(0x08)								(0x08)
-	volatile uint32_t I2C_OAR2;			//Own Address Register			(0x0C)
-	volatile uint32_t I2C_DR; 			//Data register 				(0x10)
-    volatile uint32_t I2C_SR1; 			//Status register 				(0x14)				Reset value: 0x0000
-    volatile uint32_t I2C_SR2; 			//Status register 				(0x18)				Reset value: 0x0000
+	volatile uint32_t I2C_R1;				//Control register 1						(0x00)
+	volatile uint32_t I2C_CR2;			//Control registers 2		 				(0x04)
+	volatile uint32_t I2C_OAR1;		//Own Address Register 1			(0x08)
+	volatile uint32_t I2C_OAR2;		//Own Address Register				(0x0C)
+	volatile uint32_t I2C_DR; 			//Data register 								(0x10)
+    volatile uint32_t I2C_SR1; 			//Status register 							(0x14)				Reset value: 0x0000
+    volatile uint32_t I2C_SR2; 			//Status register 							(0x18)				Reset value: 0x0000
 	volatile uint32_t I2C_CCR;	 		//I2C CRC Polynomial register	(0x1C)				Reset value: 0x0000
-	volatile uint32_t I2C_TRISE; 		//I2C Rx CRC Register			(0x20)				Reset value: 0x2
-	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register			(0x24)
+	volatile uint32_t I2C_TRISE; 		//I2C Rx CRC Register					(0x20)				Reset value: 0x2
+	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register					(0x24)
 }I2C_RegDef_t;
 
 
@@ -391,7 +392,7 @@ typedef struct
 #define I2C2_BASE_ADDR		(APB1_PERIPH_BASE + 5800)
 #define I2C3_BASE_ADDR		(APB1_PERIPH_BASE + 5C00)
 
-/*Pointers to I2Cx Base Addresses*/
+/*Peripheral Definition Macros - Pointers to I2Cx Base Addresses*/
 #define I2C1 				((I2C_RegDef_t*)(I2C1_BASE_ADDR))
 #define I2C2 				((I2C_RegDef_t*)(I2C2_BASE_ADDR))
 #define I2C3 				((I2C_RegDef_t*)(I2C3_BASE_ADDR))
@@ -410,7 +411,7 @@ typedef struct
 #define I2C_2_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C2RST))
 #define I2C_3_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C3RST))
 
-/* Bit Position Definitions of the SPI Peripheral */
+/* Bit Position Definitions of the I2C Peripheral */
 
 /* I2C_CR1 */
 #define PE				0
@@ -467,38 +468,48 @@ typedef struct
 #define ADD2_7			7
 
 /*I2C_SR1*/
-#define SB				0
-#define ADDR			1
-#define BTF				2
+#define SB					0
+#define ADDR				1
+#define BTF					2
 #define ADD10			3
-#define STOPF			4
-#define RxNE			6
-#define	TxE				7
-#define	BERR			8
-#define	ARLO			9
-#define	AF				10
+#define STOPF				4
+#define RxNE				6
+#define	TxE					7
+#define	BERR				8
+#define	ARLO				9
+#define	AF					10
 #define	OVR				11
 #define	PEC_ERR			12
-#define TIMEOUT			13
-#define SMB_ALERT		15
+#define TIMEOUT		13
+#define SMB_ALERT	15
 
 /*I2C_SR2*/
+#define MSL						0
+#define I2C_BUSY			1
+#define TRA						2
+#define GENCALL			4
+#define SMBDEFAULT	5
+#define SMBHOST			6
+#define DUALF				7
+
 
 /*I2C_CCR*/
-#define CCR0			0
-#define CCR1			1
-#define CCR2			2
-#define CCR3			3
-#define CCR4			4
-#define CCR5			5
-#define CCR6			6
-#define CCR7			7
-#define CCR8			8
-#define CCR9			9
-#define CCR10			10
-#define CCR11			11
-#define DUTY			14
-#define FS				15
+#define CCR0					0
+#define CCR1					1
+#define CCR2					2
+#define CCR3					3
+#define CCR4					4
+#define CCR5					5
+#define CCR6					6
+#define CCR7					7
+#define CCR8					8
+#define CCR9					9
+#define CCR10					10
+#define CCR11					11
+#define DUTY					14
+#define FS							15
+
+/*I2C_TRISE*/
 
 
 /*Peripheral Interrupt Requests*/
