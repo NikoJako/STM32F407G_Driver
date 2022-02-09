@@ -62,40 +62,36 @@
  *
  * */
 #define FLASH_BASE_ADDR						0x08000000U
-#define SRAM1_BASE_ADDR						0x20000000U
-#define SRAM2_BASE_ADDR						0x2001C000U
+#define SRAM1_BASE_ADDR					0x20000000U
+#define SRAM2_BASE_ADDR					0x2001C000U
 #define ROM_BASE_ADDR						0x1FFF0000U
-#define OTP_BASE_ADDR						0x1FFF7800U
+#define OTP_BASE_ADDR							0x1FFF7800U
 
 //Buses
-#define	PERIPH_BASE							0x40000000U
+#define	PERIPH_BASE								0x40000000U
 #define	APB1_PERIPH_BASE					PERIPH_BASE
 #define APB2_PERIPH_BASE					0x40010000U
 #define AHB1_PERIPH_BASE					0x40020000U
 #define AHB2_PERIPH_BASE					0x50000000U
 
 //AHB1 Peripherals - GPIO & RCC Registers
-#define GPIOA_BASE_ADDR			(AHB1_PERIPH_BASE + 0x0000)
-#define GPIOB_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0400)
-#define GPIOC_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0800)
-#define GPIOD_BASE_ADDR		(AHB1_PERIPH_BASE + 0x0C00)
-#define GPIOE_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1000)
-#define GPIOF_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1400)
-#define GPIOG_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1800)
-#define GPIOH_BASE_ADDR		(AHB1_PERIPH_BASE + 0x1C00)
-#define GPIOI_BASE_ADDR		(AHB1_PERIPH_BASE + 0x2000)
+#define GPIOA_BASE_ADDR					(AHB1_PERIPH_BASE + 0x0000)
+#define GPIOB_BASE_ADDR					(AHB1_PERIPH_BASE + 0x0400)
+#define GPIOC_BASE_ADDR						(AHB1_PERIPH_BASE + 0x0800)
+#define GPIOD_BASE_ADDR					(AHB1_PERIPH_BASE + 0x0C00)
+#define GPIOE_BASE_ADDR						(AHB1_PERIPH_BASE + 0x1000)
+#define GPIOF_BASE_ADDR						(AHB1_PERIPH_BASE + 0x1400)
+#define GPIOG_BASE_ADDR					(AHB1_PERIPH_BASE + 0x1800)
+#define GPIOH_BASE_ADDR					(AHB1_PERIPH_BASE + 0x1C00)
+#define GPIOI_BASE_ADDR						(AHB1_PERIPH_BASE + 0x2000)
 
-#define RCC_BASE_ADDR 		(AHB1_PERIPH_BASE + 0x3800)
+#define RCC_BASE_ADDR 						(AHB1_PERIPH_BASE + 0x3800)
 
 //APB1 Peripherals
 #define USART_2_BASE_ADDR	(APB1_PERIPH_BASE + 0x4400)
 #define USART_3_BASE_ADDR	(APB1_PERIPH_BASE + 0x4800)
-#define UART_4_BASE_ADDR	(APB1_PERIPH_BASE + 0x4C00)
-#define UART_5_BASE_ADDR	(APB1_PERIPH_BASE + 0x5000)
-
-#define I2C_1_BASE_ADDR		(APB1_PERIPH_BASE + 0x5400)
-#define I2C_2_BASE_ADDR		(APB1_PERIPH_BASE + 0x5800)
-#define I2C_3_BASE_ADDR		(APB1_PERIPH_BASE + 0x5C00)
+#define UART_4_BASE_ADDR		(APB1_PERIPH_BASE + 0x4C00)
+#define UART_5_BASE_ADDR		(APB1_PERIPH_BASE + 0x5000)
 
 //APB2 Peripherals - SPI, USART, EXTI & SYSCFG
 #define USART_1_BASE_ADDR	(APB2_PERIPH_BASE + 0x1000)
@@ -366,7 +362,7 @@ typedef struct
 /* I2Cx Register Definition */
 typedef struct
 {
-	volatile uint32_t I2C_R1;				//Control register 1						(0x00)
+	volatile uint32_t I2C_CR1;				//Control register 1						(0x00)
 	volatile uint32_t I2C_CR2;			//Control registers 2		 				(0x04)
 	volatile uint32_t I2C_OAR1;		//Own Address Register 1			(0x08)
 	volatile uint32_t I2C_OAR2;		//Own Address Register				(0x0C)
@@ -378,58 +374,57 @@ typedef struct
 	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register					(0x24)
 }I2C_RegDef_t;
 
+#define I2C1RST							21
+#define I2C2RST							22
+#define I2C3RST							23
 
-#define I2C1RST				21
-#define I2C2RST				22
-#define I2C3RST				23
-
-#define I2C1EN				I2C1RST
-#define I2C2EN				I2C2RST
-#define I2C3EN				I2C3RST
+#define I2C1EN							I2C1RST
+#define I2C2EN							I2C2RST
+#define I2C3EN							I2C3RST
 
 /*I2Cx Base Addresses*/
-#define I2C1_BASE_ADDR		(APB1_PERIPH_BASE + 5400)
-#define I2C2_BASE_ADDR		(APB1_PERIPH_BASE + 5800)
-#define I2C3_BASE_ADDR		(APB1_PERIPH_BASE + 5C00)
+#define I2C1_BASE_ADDR		(APB1_PERIPH_BASE + 0x5400)
+#define I2C2_BASE_ADDR		(APB1_PERIPH_BASE + 0x5800)
+#define I2C3_BASE_ADDR		(APB1_PERIPH_BASE + 0x5C00)
 
 /*Peripheral Definition Macros - Pointers to I2Cx Base Addresses*/
-#define I2C1 				((I2C_RegDef_t*)(I2C1_BASE_ADDR))
-#define I2C2 				((I2C_RegDef_t*)(I2C2_BASE_ADDR))
-#define I2C3 				((I2C_RegDef_t*)(I2C3_BASE_ADDR))
+#define I2C1 								((I2C_RegDef_t*)(I2C1_BASE_ADDR))
+#define I2C2 								((I2C_RegDef_t*)(I2C2_BASE_ADDR))
+#define I2C3 								((I2C_RegDef_t*)(I2C3_BASE_ADDR))
 
 /*I2Cx Clock Enable/Disable Macros*/
-#define I2C_1_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C1EN))
-#define I2C_2_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C2EN))
-#define I2C_3_PCLK_EN()		(RCC->RCC_APB1ENR |= (1 << I2C3EN))
+#define I2C_1_PCLK_EN()			(RCC->RCC_APB1ENR |= (1 << I2C1EN))
+#define I2C_2_PCLK_EN()			(RCC->RCC_APB1ENR |= (1 << I2C2EN))
+#define I2C_3_PCLK_EN()			(RCC->RCC_APB1ENR |= (1 << I2C3EN))
 
-#define I2C_1_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C1EN))
-#define I2C_2_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C2EN))
-#define I2C_3_PCLK_DI()		(RCC->RCC_APB1ENR &= ~(1 << I2C3EN))
+#define I2C_1_PCLK_DI()			(RCC->RCC_APB1ENR &= ~(1 << I2C1EN))
+#define I2C_2_PCLK_DI()			(RCC->RCC_APB1ENR &= ~(1 << I2C2EN))
+#define I2C_3_PCLK_DI()			(RCC->RCC_APB1ENR &= ~(1 << I2C3EN))
 
 /*I2Cx Register Reset Macros*/
-#define I2C_1_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C1RST))
-#define I2C_2_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C2RST))
-#define I2C_3_REG_RESET		(RCC->RCC_APB1RSTR =| (1 << I2C3RST))
+#define I2C_1_REG_RESET()		(RCC->RCC_APB1RSTR |= (1 << I2C1RST))
+#define I2C_2_REG_RESET()		(RCC->RCC_APB1RSTR |= (1 << I2C2RST))
+#define I2C_3_REG_RESET()		(RCC->RCC_APB1RSTR |= (1 << I2C3RST))
 
 /* Bit Position Definitions of the I2C Peripheral */
 
 /* I2C_CR1 */
-#define PE				0
-#define SMBU			1
-#define RESERVED2		2
-#define SMBTYPE			3
-#define ENARP			4
-#define ENPEC			5
-#define ENGC			6
-#define NO_STRETCH		7
-#define START			8
-#define STOP			9
-#define ACK				10
-#define POS				11
-#define PEC				12
-#define ALERT			13
-#define RESERVED14      14
-#define SWRST			15
+#define I2C_CR1_PE							0
+#define I2C_CR1_SMBU						1
+#define RESERVED2							2
+#define I2C_CR1_SMBTYPE				3
+#define I2C_CR1_ENARP					4
+#define I2C_CR1_ENPEC						5
+#define I2C_CR1_ENGC						6
+#define I2C_CR1_NO_STRETCH		7
+#define I2C_CR1_START					8
+#define I2C_CR1_STOP						9
+#define I2C_CR1_ACK							10
+#define I2C_CR1_POS							11
+#define I2C_CR1_PEC							12
+#define I2C_CR1_ALERT						13
+#define RESERVED14      					14
+#define I2C_CR1_SWRST					15
 
 /*I2C_CR2*/
 #define FREQ0			0
