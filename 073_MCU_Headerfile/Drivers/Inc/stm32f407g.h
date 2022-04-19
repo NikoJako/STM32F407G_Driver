@@ -45,14 +45,14 @@
 
 
 //Generic Macros
-#define ENABLE 			1
-#define DISABLE 		0
-#define SET 			ENABLE
-#define RESET 			DISABLE
-#define GPIO_PIN_SET	SET
-#define GPIO_PIN_RESET	RESET
-#define FLAG_RESET		RESET
-#define FLAG_SET		SET
+#define ENABLE 						1
+#define DISABLE 					0
+#define SET 								ENABLE
+#define RESET 							DISABLE
+#define GPIO_PIN_SET			SET
+#define GPIO_PIN_RESET		RESET
+#define FLAG_RESET				RESET
+#define FLAG_SET					SET
 
 
 /* Memory Base Addresses
