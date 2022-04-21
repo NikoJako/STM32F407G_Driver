@@ -62,6 +62,9 @@ typedef struct
   * 					For More Information About the APIs see the Function definitions
   * ******************************************************************************************************************************************************************************
   */
+/*Function to calculate the PLL clock value */
+uint32_t RCC_GetPLLOutputClock(void);
+
 /*Function to calculate the FREQ value in I2C_CR2, called in I2C_Init*/
 uint32_t RCC_GetPCLK1Value(void);
 

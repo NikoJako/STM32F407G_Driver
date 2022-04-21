@@ -10,6 +10,24 @@
 #include "stm32f407g.h"
 #include "stm32f407g_i2c_driver.h"
 
+uint16_t AHB_Prescalar[8] = {2, 4, 8, 16, 64, 128, 256, 512};
+uint8_t APB_Prescalar[4] = {2, 4, 8, 16};
+
+/*Function to calculate the PLL clock value
+ * * @fn
+ *
+ * @brief
+ *
+ * @param[in]
+ * @param[in]
+ * @param[in]*/
+uint32_t RCC_GetPLLOutputClock(void)
+{
+
+	uint32_t empty;
+	/* Dummy function - not implemented */
+	return empty;
+}
 /*Function to calculate the FREQ value in I2C_CR2, called in I2C_Init
  * @fn
  *
@@ -21,13 +39,80 @@
  * */
 uint32_t RCC_GetPCLK1Value(void)
 {
-	uint32_t pclk1;
-	uint8_t clksrc;
+	uint32_t pclk1, SystemClk;
+
+	uint8_t clksrc, temp, apb_prescalar, ahb_prescalar;
 
 	/* Right shifts the contents of RCC_CFGR over twice
 	 * and then clears everything but bits 0 & 1
 	 * which are now SWS1 and SWS0 */
 	clksrc = (RCC->RCC_CFGR >> 2) & 0x3;
+
+	if (clksrc == 0)
+	{
+		SystemClk = 16000000;
+	}
+	else if (clksrc == 1)
+	{
+		SystemClk = 8000000;
+	}
+	else if (clksrc == 2)
+	{
+		/* Dummy function - not implemented */
+		SystemClk = RCC_GetPLLOutputClock();
+	}
+
+	/* Read the current value of the RCC_CFGR bits 7:4 HPRE
+	 * See page 167 of the RM  */
+	temp  = (RCC->RCC_CFGR >> 4) & 0xF;
+
+	/*   */
+	if (temp < 8 )
+	{
+		ahb_prescalar = 1;
+	}
+	else
+	{
+		/* This determines the current system clock prescaler value
+		 * e.g. When temp == 8, then the system clock is divided by 2
+		 * in this case,  the HPRE  bits == 8
+		 * 1000: system clock divided by 2
+*1001: system clock divided by 4
+1010: system clock divided by 8
+1011: system clock divided by 16
+1100: system clock divided by 64
+1101: system clock divided by 128
+1110: system clock divided by 256
+1111: system clock divided by 512*/
+		ahb_prescalar = AHB_Prescalar[temp - 8];
+	}
+
+	/* Read the current value of the RCC_CFGR bits 12:10 PPRE1
+	 * Shift to the far right, and clear everything after the first
+	 * 3 bits
+	 * See page 166 of the RM
+	 *
+	   */
+		temp  = (RCC->RCC_CFGR >> 10) & 0x7;
+
+		/*  0xx: AHB clock not divided  */
+		if (temp < 4 )
+		{
+			apb_prescalar = 1;
+		}
+		else
+		{
+			/* This determines the current AHB prescaler value
+			 * e.g. When temp == 5, then the AHB  is divided by 4
+			 * in this case,  the PPRE1 bits == 5
+			 * 100: AHB clock divided by 2
+			 * 101: AHB clock divided by 4
+			 *	110: AHB clock divided by 8
+			 *	111: AHB clock divided by 16*/
+			apb_prescalar = APB_Prescalar[temp - 4];
+		}
+
+		pclk1 = ((SystemClk / ahb_prescalar) / apb_prescalar);
 
 	return pclk1;
 }
