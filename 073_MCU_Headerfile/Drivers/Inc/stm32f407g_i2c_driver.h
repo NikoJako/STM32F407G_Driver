@@ -62,6 +62,8 @@ typedef struct
   * 					For More Information About the APIs see the Function definitions
   * ******************************************************************************************************************************************************************************
   */
+/*Function to calculate the FREQ value in I2C_CR2, called in I2C_Init*/
+uint32_t RCC_GetPCLK1Value(void);
 
 /*Peripheral Clock Setup - enable/disable peripheral clk for a given SPI base address*/
  void I2C_PeriClkControl(I2C_RegDef_t *pI2Cx, uint8_t En_Reset_Or_DI);

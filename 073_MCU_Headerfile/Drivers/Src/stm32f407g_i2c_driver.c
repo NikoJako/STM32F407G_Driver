@@ -10,8 +10,35 @@
 #include "stm32f407g.h"
 #include "stm32f407g_i2c_driver.h"
 
+/*Function to calculate the FREQ value in I2C_CR2, called in I2C_Init
+ * @fn
+ *
+ * @brief
+ *
+ * @param[in]
+ * @param[in]
+ * @param[in]
+ * */
+uint32_t RCC_GetPCLK1Value(void)
+{
+	uint32_t pclk1;
+	uint8_t clksrc;
 
-/*Peripheral Clock Setup - enable/disable peripheral clk for a given I2C base address*/
+	/* Right shifts the contents of RCC_CFGR over twice
+	 * and then clears everything but bits 0 & 1
+	 * which are now SWS1 and SWS0 */
+	clksrc = (RCC->RCC_CFGR >> 2) & 0x3;
+
+	return pclk1;
+}
+/*Peripheral Clock Setup - enable/disable peripheral clk for a given I2C base address
+ * * @fn
+ *
+ * @brief
+ *
+ * @param[in]
+ * @param[in]
+ * */
  void I2C_PeriClkControl(I2C_RegDef_t *pI2Cx, uint8_t En_Reset_Or_DI)
  {
 	 /*Same thing for GPIO & SPI, see page 265 & 174 respectively of RM */
@@ -68,6 +95,12 @@
  void I2C_Init(I2C_Handle_t *pI2CHandle)
  {
 	 uint32_t tempreg = 0;
+
+	 /* Not sure why we need to read the value into temp*/
+	 tempreg |= (pI2CHandle->I2C_Config.I2C_ACKControl << I2C_CR1_ACK);
+
+	 /* Configure the FREQ bits in I2C_CR2
+	  * 16MHz */
 
  }
 
