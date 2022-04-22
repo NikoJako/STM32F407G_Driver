@@ -39,8 +39,8 @@ typedef struct
  *
  * */
 #define I2C_SCL_SPEED_SM					100000
-#define I2C_SCL_SPEED_FM2K				200000
-#define I2C_SCL_SPEED_FM4K				200000
+#define I2C_SCL_SPEED_FM200K		200000
+#define I2C_SCL_SPEED_FM400K		400000
 
 /*
  * @ I2C_ACKControl

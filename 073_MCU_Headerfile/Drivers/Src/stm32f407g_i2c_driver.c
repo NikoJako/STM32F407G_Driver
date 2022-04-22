@@ -28,7 +28,8 @@ uint32_t RCC_GetPLLOutputClock(void)
 	/* Dummy function - not implemented */
 	return empty;
 }
-/*Function to calculate the FREQ value in I2C_CR2, called in I2C_Init
+/* Determines the current system clock source by reading the SWSx[3:2] bits
+ * in  the RCC_CFGR register. See page 167 in RM
  * @fn
  *
  * @brief
@@ -77,13 +78,13 @@ uint32_t RCC_GetPCLK1Value(void)
 		 * e.g. When temp == 8, then the system clock is divided by 2
 		 * in this case,  the HPRE  bits == 8
 		 * 1000: system clock divided by 2
-*1001: system clock divided by 4
-1010: system clock divided by 8
-1011: system clock divided by 16
-1100: system clock divided by 64
-1101: system clock divided by 128
-1110: system clock divided by 256
-1111: system clock divided by 512*/
+		 *1001: system clock divided by 4
+		 *1010: system clock divided by 8
+		 *1011: system clock divided by 16
+		 *1100: system clock divided by 64
+		 *1101: system clock divided by 128
+		 *1110: system clock divided by 256
+		 *1111: system clock divided by 512*/
 		ahb_prescalar = AHB_Prescalar[temp - 8];
 	}
 
@@ -181,11 +182,83 @@ uint32_t RCC_GetPCLK1Value(void)
  {
 	 uint32_t tempreg = 0;
 
-	 /* Not sure why we need to read the value into temp*/
+	 /*ACK Control Bit
+	  * REVIEW THIS
+	  * Value << Location
+	  *  Not sure why we need to read the value into temp*/
 	 tempreg |= (pI2CHandle->I2C_Config.I2C_ACKControl << I2C_CR1_ACK);
 
-	 /* Configure the FREQ bits in I2C_CR2
+	 /* FREQ bits configuration in I2C_CR2
 	  * 16MHz */
+	 tempreg = 0;
+
+	 /* returns uint32_t , divide by 1M to remove trailing 0s e.g. "16" */
+	 tempreg |= RCC_GetPCLK1Value() / 1000000U;
+
+	 /* 0x3F = 0011 1111, this is to clear out everything but the first 6 bits
+	  * of tempreg to ensure that only the FREQ bits are
+	  * being updated in I2C_CR2 */
+	 pI2CHandle->pI2Cx->I2C_CR2 = (tempreg & 0x3F);
+
+	 /* OWN ADDRESS configuration
+	  * we shift to the left once because we're using a 7-bit address
+	  * the ADD0  bit is used for a 10-bit address ONLY
+	  * 0xFE = 1111 1110 - In the lecture Kiran didn't do the 0xFE mask */
+	 tempreg = 0;
+	 tempreg |= (pI2CHandle->I2C_Config.I2C_DeviceAddress << 1);
+
+	 /* RM says this must always be set to 1, see page 864 */
+	 tempreg |= (1 << 14);
+
+	 /* Apply changes to I2C_OAR1*/
+	 pI2CHandle->pI2Cx->I2C_OAR1 |= (tempreg & 0xFE);
+
+	 /* CCR Calculations */
+	 uint16_t ccr_value = 0;
+	 tempreg = 0;
+
+	 /* Checking the Serial Clock Speed*/
+	 if(pI2CHandle->I2C_Config.I2C_SCLSpeed <= I2C_SCL_SPEED_SM)
+	 {
+		 /* Get/Calculate Standard Mode CCR value*/
+		 ccr_value = RCC_GetPCLK1Value() / (2 * pI2CHandle->I2C_Config.I2C_SCLSpeed);
+
+		 /*Program  CCR value
+		  * ccr_value is uint16_t but we only need the first 12-bits
+		  * see page 870 in RM - 0000 1111 1111 1111 = 0xFFF */
+		 tempreg |= (ccr_value & 0xFFF);
+	 }
+	 else
+	 {
+		 /*Fast Mode*/
+
+		 /*Set F/S Master Mode bit */
+		 tempreg |= (SET << FS);
+
+		 /* Fast Mode Duty Cycle
+		  * Supplied by the application/user/ I2C_Config_t*/
+		 tempreg |= (pI2CHandle->I2C_Config.I2C_FMDutyCycle << DUTY);
+
+		 /*Get/Calculate Fast Mode CCR Value*/
+		 if(pI2CHandle->I2C_Config.I2C_FMDutyCycle == I2C_FM_DUTY_2)
+		 {
+			 ccr_value = RCC_GetPCLK1Value() / (3 * pI2CHandle->I2C_Config.I2C_SCLSpeed);
+		 }
+		 else
+		 {
+			 ccr_value = RCC_GetPCLK1Value() / (25 * pI2CHandle->I2C_Config.I2C_SCLSpeed);
+		 }
+
+		 /* Program the CCR Value*/
+		 tempreg |= (ccr_value & 0xFFF);
+	 }
+
+		 pI2CHandle->pI2Cx->I2C_CCR = tempreg;
+
+
+
+
+
 
  }
 

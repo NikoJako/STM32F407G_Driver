@@ -487,7 +487,6 @@ typedef struct
 #define SMBHOST			6
 #define DUALF				7
 
-
 /*I2C_CCR*/
 #define CCR0					0
 #define CCR1					1
