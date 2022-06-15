@@ -362,7 +362,7 @@ typedef struct
 /* I2Cx Register Definition */
 typedef struct
 {
-	volatile uint32_t I2C_CR1;				//Control register 1						(0x00)
+	volatile uint32_t I2C_CR1;			//Control register 1						(0x00)
 	volatile uint32_t I2C_CR2;			//Control registers 2		 				(0x04)
 	volatile uint32_t I2C_OAR1;		//Own Address Register 1			(0x08)
 	volatile uint32_t I2C_OAR2;		//Own Address Register				(0x0C)
@@ -463,20 +463,20 @@ typedef struct
 #define ADD2_7			7
 
 /*I2C_SR1*/
-#define SB					0
-#define ADDR				1
-#define BTF					2
-#define ADD10			3
-#define STOPF				4
-#define RxNE				6
-#define	TxE					7
-#define	BERR				8
-#define	ARLO				9
-#define	AF					10
-#define	OVR				11
-#define	PEC_ERR			12
-#define TIMEOUT		13
-#define SMB_ALERT	15
+#define I2C_SR1_SB					0
+#define I2C_SR1_ADDR				1
+#define I2C_SR1_BTF					2
+#define I2C_SR1_ADD10			3
+#define I2C_SR1_STOPF			4
+#define I2C_SR1_RxNE				6
+#define	I2C_SR1_TxE					7
+#define	I2C_SR1_BERR				8
+#define	I2C_SR1_ARLO				9
+#define	I2C_SR1_AF					10
+#define	I2C_SR1_OVR				11
+#define	I2C_SR1_PEC_ERR		12
+#define I2C_SR1_TIMEOUT		13
+#define I2C_SR1_SMB_ALERT	15
 
 /*I2C_SR2*/
 #define MSL						0

@@ -57,6 +57,21 @@ typedef struct
 #define I2C_FM_DUTY_2						0
 #define I2C_FM_DUTY_16_9					1
 
+/*
+   * I2C related status flag definitions
+   * aka "masking info"
+   * */
+#define I2C_FLAG_SR1_SB				(1 << I2C_SR1_SB)
+#define I2C_FLAG_SR1_ADDR			(1 << I2C_SR1_ADDR)
+#define I2C_FLAG_SR1_BTF				(1 << I2C_SR1_BTF)
+#define I2C_FLAG_SR1_RxNE			(1 << I2C_SR1_RxNE)
+#define I2C_FLAG_SR1_TxE				(1 << I2C_SR1_TxE)
+#define I2C_FLAG_SR1_BERR			(1 << I2C_SR1_BERR)
+#define I2C_FLAG_SR1_ARLO			(1 << I2C_SR1_ARLO)
+#define I2C_FLAG_SR1_AF				(1 << I2C_SR1_AF)
+#define I2C_FLAG_SR1_OVR 			(1 << I2C_SR1_OVR)
+#define I2C_FLAG_SR1_TIMEOUT 	(1 <<  I2C_SR1_TIMEOUT)
+
 /*******************************************************************************************************************************************************************************
   *										APIs Supported By This Driver
   * 					For More Information About the APIs see the Function definitions
@@ -76,6 +91,9 @@ uint32_t RCC_GetPCLK1Value(void);
 
  /* */
  void I2C_DeInit(I2C_Handle_t *pI2CHandle);
+
+ /* */
+ void I2C_MasterSendData(I2C_Handle_t *pI2CHandle, uint8_t *pTxBuffer, uint8_t Len, uint8_t SlaveAddr);
 
  /* */
  void I2C_IRQ_Interrupt_Config(uint8_t IRQNumber, uint8_t ENorDI);
