@@ -14,8 +14,30 @@ uint16_t AHB_Prescalar[8] = {2, 4, 8, 16, 64, 128, 256, 512};
 uint8_t APB_Prescalar[4] = {2, 4, 8, 16};
 
 /* Private fuction - don't need to add to i2c_driver.h*/
+uint8_t I2C_GetFlag_Status(I2C_RegDef_t *pI2Cx, uint32_t FlagName);
 static void I2C_GenerateStartCondition(I2C_RegDef_t *pI2Cx);
 static void I2C_ExecuteAddressPhase(I2C_RegDef_t *pI2Cx, uint8_t SlaveAddr);
+static void I2C_ClearADDR_Flag(I2C_RegDef_t *pI2Cx);
+static void I2C_GenerateStopCondition(I2C_RegDef_t *pI2Cx);
+/*
+ * * @fn
+ *
+ * @brief
+ *
+ * @param[in]
+ * @param[in]
+ * @param[in]  */
+ uint8_t I2C_GetFlag_Status(I2C_RegDef_t *pI2Cx, uint32_t FlagName)
+ {
+	 if(!(pI2Cx->I2C_SR1 & FlagName))
+		 {
+			 return FLAG_RESET;
+		 }
+		 else
+		 {
+			 return FLAG_SET;
+		 }
+  }
 
 /* Generates the START condition by setting the START bit in I2C_CR1
  * * @fn
@@ -50,6 +72,42 @@ static void I2C_ExecuteAddressPhase(I2C_RegDef_t *pI2Cx, uint8_t SlaveAddr)
 
 	/*3. Write the address to the I2C_DR*/
 	pI2Cx->I2C_DR = SlaveAddr;
+}
+
+/* @fn - Clears the ADDR bit in I2C_SR1 by reading reading SR1 register followed reading SR2
+ *
+ * @brief
+ *
+ * @param[in]
+ * @param[in]
+ * @param[in]  */
+static void I2C_ClearADDR_Flag(I2C_RegDef_t *pI2Cx)
+{
+	uint32_t dummyRead =pI2Cx->I2C_SR1;
+	dummyRead =pI2Cx->I2C_SR2;
+
+	/* add "(void)" otherwise the complier will give you an error
+	 * in the video Kiran initially makes dummyRead uint16_t and
+	 * then changes it to uint32. If it was uint16 is the typecast (void)
+	 * necessary?*/
+	(void)dummyRead;
+}
+
+/*
+ * * @fn
+ *
+ * @brief - Stop generation after the current byte transfer or
+ * after the current Start condition is sent.
+ *
+ * Possibly waits until all the bit are shifted out of the shift register
+ *
+ * @param[in]
+ * @param[in]
+ * @param[in]*/
+static void I2C_GenerateStopCondition(I2C_RegDef_t *pI2Cx)
+{
+	/* value << location */
+		 pI2Cx->I2C_CR1 |= (SET <<  I2C_CR1_STOP);
 }
 
 /*Function to calculate the PLL clock value
@@ -330,6 +388,54 @@ uint32_t RCC_GetPCLK1Value(void)
 	 /*3. Send the address of the slave with the r/w bit set to w (0) (total 8 bits)  */
 	 I2C_ExecuteAddressPhase(pI2CHandle->pI2Cx, SlaveAddr);
 
+	 /*4. Confirm that the address phase is complete by checking the ADDR flag in the I2C_SPI reg*/
+	 while(!I2C_GetFlag_Status(pI2CHandle->pI2Cx, I2C_FLAG_SR1_ADDR));
+
+	 /*5. Clear the ADDR bit according to its SW (code) sequence
+	  * NOTE: Until ADDR is cleared, the SCL will be stretched (pulled LOW) */
+	 I2C_ClearADDR_Flag(pI2CHandle->pI2Cx);
+
+	 /*6. Send data until length == 0
+	  * Remember to confirm whether the data register is empty
+	  * or not by checking the TxE bit/flag
+	  * TxE == 0 means DR is not empty
+	  * TxE == 1 means DR is empty */
+
+	 while(Len > 0)
+	 {
+		 /* If I2C_GetFlag_Status returns 0 that means that the DR is not empty
+		  *  (currently transferring to the shift register) and we want to wait until
+		  *  it's empty to  send data, so we add the "!" so the code inside the while
+		  *  loop executes
+		  *
+		  * If I2C_GetFlag_Status returns 1, that means that  the DR is empty and
+		  * we want to send data
+		  *
+		  * Lecture 196, 00:00:12 check this again I think he has it backwards
+		  * the follow code is what it should be */
+		 while( I2C_GetFlag_Status(pI2CHandle->pI2Cx, I2C_FLAG_SR1_TxE));
+		 pI2CHandle->pI2Cx->I2C_DR = *pTxBuffer;
+		 pTxBuffer++;
+		 Len--;
+
+		 /* 7. When Len == 0, wait for TxE == 1 & BTF == 1 before generating the
+		  * STOP condition.
+		  * NOTE: When TxE & BTF == 1, that means both the shift register (SR) & DR
+		  * are empty and the next transmission should begin. When BTF ==1 the SCL
+		  * will be stretched
+		  *
+		  * Do you need to add the " ! "? */
+		 while( I2C_GetFlag_Status(pI2CHandle->pI2Cx, I2C_FLAG_SR1_TxE));
+		 while( I2C_GetFlag_Status(pI2CHandle->pI2Cx, I2C_FLAG_SR1_BTF));
+
+
+		 /* 8. Generate STOP condition and master need not to wait for the completion of
+		  * the STOP condition.
+		  * NOTE: Generating STOP, automatically clears the BTF*/
+		 I2C_GenerateStopCondition(pI2CHandle->pI2Cx);
+	 }
+
+
  }
 
 
@@ -423,19 +529,6 @@ void I2C_Peripheral_Control(I2C_RegDef_t *pI2Cx, uint8_t EnOrDi)
 {
 
  }
-
-/* */
- uint8_t I2C_GetFlag_Status(I2C_RegDef_t *pI2Cx, uint32_t FlagName)
- {
-	 if(!(pI2Cx->I2C_SR1 & FlagName))
-		 {
-			 return FLAG_RESET;
-		 }
-		 else
-		 {
-			 return FLAG_SET;
-		 }
-  }
 
 /* Application Callback - used for interrupt-based API*/
 void I2C_ApplicationEventCallback(I2C_Handle_t *pI2CHandle, uint8_t App_Event)
