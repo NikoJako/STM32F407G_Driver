@@ -5,6 +5,8 @@
  *      Author: njacobs
  */
 
+/* These prevent inclusion of multiple definitions during the preprocessor
+ * state of the compilation*/
 #ifndef INC_STM32F407G_I2C_DRIVER_H_
 #define INC_STM32F407G_I2C_DRIVER_H_
 

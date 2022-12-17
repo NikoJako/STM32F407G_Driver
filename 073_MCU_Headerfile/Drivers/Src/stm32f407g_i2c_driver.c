@@ -352,6 +352,24 @@ uint32_t RCC_GetPCLK1Value(void)
 
 		 pI2CHandle->pI2Cx->I2C_CCR = tempreg;
 
+	 /* TRISE Calculation
+	  * See page 871  in the RM
+	  * FPCLK1 x Trise(MAX) + 1
+	  * FPCLK1 see  line 138 above
+	  * Trise(MAX) see page 44 of the I2C spec, this is the max Trise time allowed
+	  * for a given I2C speed i.e. stnadard mode, fast mode, etc)*/
+		 if(pI2CHandle->I2C_Config.I2C_SCLSpeed <= I2C_SCL_SPEED_SM)
+		 {
+			 /* Standard Mode */
+			 tempreg = (RCC_GetPCLK1Value() / 1000000U) + 1;
+
+		 }
+		 else
+		 {
+			 /*Fast Mode*/
+			 tempreg = ((RCC_GetPCLK1Value() * 300) / 1000000U) + 1 ;
+		 }
+		 pI2CHandle->pI2Cx->I2C_TRISE = (tempreg & 0x3F);
  }
 
  /* */
@@ -388,7 +406,7 @@ uint32_t RCC_GetPCLK1Value(void)
 	 /*3. Send the address of the slave with the r/w bit set to w (0) (total 8 bits)  */
 	 I2C_ExecuteAddressPhase(pI2CHandle->pI2Cx, SlaveAddr);
 
-	 /*4. Confirm that the address phase is complete by checking the ADDR flag in the I2C_SPI reg*/
+	 /*4. Confirm that the address phase is complete by checking the ADDR flag in the I2C_SPI register*/
 	 while(!I2C_GetFlag_Status(pI2CHandle->pI2Cx, I2C_FLAG_SR1_ADDR));
 
 	 /*5. Clear the ADDR bit according to its SW (code) sequence
