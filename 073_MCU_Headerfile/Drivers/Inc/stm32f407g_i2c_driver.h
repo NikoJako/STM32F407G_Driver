@@ -32,7 +32,7 @@ typedef struct
  * */
 typedef struct
 {
-	I2C_RegDef_t *pI2Cx;				//pointer of type I2CRegDef_t; I2CRegDef_t pointer
+	I2C_RegDef_t 		*pI2Cx;				//pointer of type I2CRegDef_t; I2CRegDef_t pointer
 	I2C_Config_t		I2C_Config;
 }I2C_Handle_t;
 
