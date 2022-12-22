@@ -67,6 +67,7 @@ void GPIO_PeriClkControl(GPIO_RegDef_t *pGPIOx, uint8_t ENorDI)
 
 		if (pGPIOx == GPIOA){
 
+			//should set AHB1ENR GPIOAEN
 			GPIOA_PCLK_DI();
 		}
 		else if	(pGPIOx == GPIOB){
@@ -124,7 +125,7 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 
 	uint32_t temp = 0;			//temp register
 
-		/*#define GPIO_MODE_INPUT		0		// When in input mode, pin can deliver interrupt
+		/*#define GPIO_MODE_INPUT		0		// When in input mode, pin can deliver interrupt (this contradicts with LN #135)
 		#define GPIO_MODE_OUTPUT		1
 		#define GPIO_MODE_ALT_FUNC		2
 		#define GPIO_MODE_ANALOG		3
@@ -257,7 +258,10 @@ void GPIO_Init(GPIO_Handle_t *pGPIOHandle)
 	 {
 		 uint8_t temp1, temp2;
 
+		 /*determines AFRL or AFRH register*/
 		 temp1 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber / 8);
+
+		 /*determines the starting bit in AFRL or AFRH register*/
 		 temp2 = (pGPIOHandle->GPIO_PinConfig.GPIO_PinNumber % 8);
 
 		 //clearing the AFR register before setting
@@ -325,9 +329,9 @@ void GPIO_DeInit(GPIO_RegDef_t *pGPIOx)
  */
 uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
 {
-	uint8_t value;
-	value = (uint8_t)((pGPIOx->IDR >> PinNumber) & 0x00000001);
-	return value;
+	uint8_t pinValue = 0;
+	pinValue = (uint8_t)((pGPIOx->IDR >> PinNumber) & 0x00000001);
+	return pinValue;
 }
 
 /*Takes pointer to base address, reads entire GPIO
@@ -336,10 +340,10 @@ uint8_t GPIO_ReadFromInputPin(GPIO_RegDef_t *pGPIOx, uint8_t PinNumber)
 uint16_t GPIO_ReadFromInputPort(GPIO_RegDef_t *pGPIOx)
 {
 
-	uint16_t value;
-	value = (uint16_t)pGPIOx->IDR;
+	uint16_t portValue = 0;
+	portValue = (uint16_t)pGPIOx->IDR;
 
-	return value;
+	return portValue;
 }
 
 /* Write value to output pin

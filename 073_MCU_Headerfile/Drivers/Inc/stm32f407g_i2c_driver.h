@@ -41,22 +41,22 @@ typedef struct
  *
  * */
 #define I2C_SCL_SPEED_SM					100000
-#define I2C_SCL_SPEED_FM200K		200000
-#define I2C_SCL_SPEED_FM400K		400000
+#define I2C_SCL_SPEED_FM200K			200000
+#define I2C_SCL_SPEED_FM400K			400000
 
 /*
  * @ I2C_ACKControl
  *  page 860 in RM
  * */
 #define I2C_ACK_ENABLE						1
-#define I2C_ACK_DISABLE					0
+#define I2C_ACK_DISABLE						0
 
 /*
  * @I2C_FMDutyCycle
  *  of serial clock in fast mode
  *  page 870 in RM
  * */
-#define I2C_FM_DUTY_2						0
+#define I2C_FM_DUTY_2							0
 #define I2C_FM_DUTY_16_9					1
 
 /*

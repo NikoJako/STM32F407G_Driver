@@ -143,7 +143,13 @@ uint32_t RCC_GetPCLK1Value(void)
 
 	/* Right shifts the contents of RCC_CFGR over twice
 	 * and then clears everything but bits 0 & 1
-	 * which are now SWS1 and SWS0 */
+	 * which are now SWS1 and SWS0
+	 * SWS: System clock switch status
+		Set and cleared by hardware to indicate which clock source is used as the system clock.
+		00: HSI oscillator used as the system clock
+		01: HSE oscillator used as the system clock
+		10: PLL used as the system clock
+		11: not applicable*/
 	clksrc = (RCC->RCC_CFGR >> 2) & 0x3;
 
 	if (clksrc == 0)
@@ -160,8 +166,9 @@ uint32_t RCC_GetPCLK1Value(void)
 		SystemClk = RCC_GetPLLOutputClock();
 	}
 
-	/* Read the current value of the RCC_CFGR bits 7:4 HPRE
-	 * See page 167 of the RM  */
+	/* NOW we need to determine the current value of the AHB Prescaler
+	 * Read the current value of the RCC_CFGR bits 7:4 HPRE
+	 * See page 167 of the RM*/
 	temp  = (RCC->RCC_CFGR >> 4) & 0xF;
 
 	/*   */
@@ -185,11 +192,11 @@ uint32_t RCC_GetPCLK1Value(void)
 		ahb_prescalar = AHB_Prescalar[temp - 8];
 	}
 
-	/* Read the current value of the RCC_CFGR bits 12:10 PPRE1
+	/* NOW we need to determine the current value of the APB1 Prescaler
+	 * Read the current value of the RCC_CFGR bits 12:10 PPRE1
 	 * Shift to the far right, and clear everything after the first
 	 * 3 bits
 	 * See page 166 of the RM
-	 *
 	   */
 		temp  = (RCC->RCC_CFGR >> 10) & 0x7;
 
@@ -277,6 +284,9 @@ uint32_t RCC_GetPCLK1Value(void)
   *  */
  void I2C_Init(I2C_Handle_t *pI2CHandle)
  {
+
+	 I2C_PeriClkControl(pI2CHandle->pI2Cx, ENABLE);
+
 	 uint32_t tempreg = 0;
 
 	 /*ACK Control Bit
@@ -284,11 +294,13 @@ uint32_t RCC_GetPCLK1Value(void)
 	  * Value << Location
 	  *  Not sure why we need to read the value into temp*/
 	 tempreg |= (pI2CHandle->I2C_Config.I2C_ACKControl << I2C_CR1_ACK);
+	 pI2CHandle->pI2Cx->I2C_CR1 = tempreg;
 
-	 /* FREQ bits configuration in I2C_CR2
-	  * 16MHz */
+	 /* Clear tempreg out since you're done configuring I2C_CR1*/
 	 tempreg = 0;
 
+	 /* FREQ bits configuration in I2C_CR2
+	 	  * 16MHz
 	 /* returns uint32_t , divide by 1M to remove trailing 0s e.g. "16" */
 	 tempreg |= RCC_GetPCLK1Value() / 1000000U;
 
@@ -302,13 +314,13 @@ uint32_t RCC_GetPCLK1Value(void)
 	  * the ADD0  bit is used for a 10-bit address ONLY
 	  * 0xFE = 1111 1110 - In the lecture Kiran didn't do the 0xFE mask */
 	 tempreg = 0;
-	 tempreg |= (pI2CHandle->I2C_Config.I2C_DeviceAddress << 1);
+	 tempreg = (pI2CHandle->I2C_Config.I2C_DeviceAddress << 1);
 
 	 /* RM says this must always be set to 1, see page 864 */
 	 tempreg |= (1 << 14);
 
 	 /* Apply changes to I2C_OAR1*/
-	 pI2CHandle->pI2Cx->I2C_OAR1 |= (tempreg & 0xFE);
+	 pI2CHandle->pI2Cx->I2C_OAR1 = (tempreg & 0xFE);
 
 	 /* CCR Calculations */
 	 uint16_t ccr_value = 0;
@@ -370,6 +382,10 @@ uint32_t RCC_GetPCLK1Value(void)
 			 tempreg = ((RCC_GetPCLK1Value() * 300) / 1000000U) + 1 ;
 		 }
 		 pI2CHandle->pI2Cx->I2C_TRISE = (tempreg & 0x3F);
+
+		 tempreg =0;
+
+		 /*Setting PE bit  in I2C_CR1*/
  }
 
  /* */
@@ -395,6 +411,9 @@ uint32_t RCC_GetPCLK1Value(void)
  /*  */
  void I2C_MasterSendData(I2C_Handle_t *pI2CHandle, uint8_t *pTxBuffer, uint8_t Len, uint8_t SlaveAddr)
  {
+	 /*Setting PE bit  in I2C_CR1*/
+	 pI2CHandle->pI2Cx->I2C_CR1 |= 0x1;
+
 	 /*1. Generate the START condition*/
 	 I2C_GenerateStartCondition(pI2CHandle->pI2Cx);
 

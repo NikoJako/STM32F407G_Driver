@@ -65,7 +65,7 @@ void I2C1_GPIO_Init()
 void I2C1_Init(void)
 {
 	/*enable the clock*/
-	I2C_PeriClkControl(I2C1_Handle.pI2Cx, ENABLE);
+	//I2C_PeriClkControl(I2C1_Handle.pI2Cx, ENABLE);
 	/*Create an I2C handle, then fill in the data:
 	 *
 	 *  typedef struct
@@ -92,13 +92,12 @@ void I2C1_Init(void)
 
 
 	/*this use to be I2C2_Init Apply settings*/
-	I2C_Init(&I2C1_Handle);
+	//I2C_Init(&I2C1_Handle);
 }
 
 void GPIO_ButtonInit()
 {
 
-	printf("In GPIO_ButtonInit()");
 	/* create GPIO port handle to interface with button
 	 GPIO_Handle_t
 	 	 GPIO_RegDef_t *pGPIOx
@@ -128,10 +127,10 @@ int main(void)
 	I2C1_GPIO_Init();
 
 	/*I2C peripheral configuration*/
-	I2C_Init(&I2C1_Handle);
+	I2C1_Init();
 
 	/*Enable the I2C Peripheral*/
-	I2C_Peripheral_Control(I2C1, ENABLE);
+//	I2C_Peripheral_Control(I2C1, ENABLE);
 
 	/*Wait for button press*/
 	//enter infinite loop
@@ -143,12 +142,15 @@ int main(void)
 			if(GPIO_ReadFromInputPin(GPIOA, GPIO_PIN_NO_0) == BTN_PRESSED)
 			{
 				delay();
-				//GPIO_ToggleOutputPin(GPIOD, GPIO_PIN_NO_12);
+
+				I2C_MasterSendData(&I2C1_Handle, some_data, strlen((char *)some_data), SLAVE_ADDR);
 			}
+
+			/*Send Data*/
+
+
 		}
 
-	/*Send Data*/
-	I2C_MasterSendData(&I2C1_Handle, some_data, strlen((char *)some_data), SLAVE_ADDR);
 
 	/*Chill here when done sending*/
 
