@@ -291,8 +291,7 @@ uint32_t RCC_GetPCLK1Value(void)
 
 	 /*ACK Control Bit
 	  * REVIEW THIS
-	  * Value << Location
-	  *  Not sure why we need to read the value into temp*/
+	  * Value << Location */
 	 tempreg |= (pI2CHandle->I2C_Config.I2C_ACKControl << I2C_CR1_ACK);
 	 pI2CHandle->pI2Cx->I2C_CR1 = tempreg;
 

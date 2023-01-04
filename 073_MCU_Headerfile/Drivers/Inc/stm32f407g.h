@@ -364,14 +364,14 @@ typedef struct
 {
 	volatile uint32_t I2C_CR1;			//Control register 1						(0x00)
 	volatile uint32_t I2C_CR2;			//Control registers 2		 				(0x04)
-	volatile uint32_t I2C_OAR1;		//Own Address Register 1			(0x08)
-	volatile uint32_t I2C_OAR2;		//Own Address Register				(0x0C)
+	volatile uint32_t I2C_OAR1;		//Own Address Register 1				(0x08)
+	volatile uint32_t I2C_OAR2;		//Own Address Register					(0x0C)
 	volatile uint32_t I2C_DR; 			//Data register 								(0x10)
     volatile uint32_t I2C_SR1; 			//Status register 							(0x14)				Reset value: 0x0000
     volatile uint32_t I2C_SR2; 			//Status register 							(0x18)				Reset value: 0x0000
 	volatile uint32_t I2C_CCR;	 		//I2C CRC Polynomial register	(0x1C)				Reset value: 0x0000
-	volatile uint32_t I2C_TRISE; 		//I2C Rx CRC Register					(0x20)				Reset value: 0x2
-	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register					(0x24)
+	volatile uint32_t I2C_TRISE; 		//I2C Rx CRC Register						(0x20)				Reset value: 0x2
+	volatile uint32_t I2C_FLTR; 		//I2C Tx CRC Register						(0x24)
 }I2C_RegDef_t;
 
 #define I2C1RST							21
